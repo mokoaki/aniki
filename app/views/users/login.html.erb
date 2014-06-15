@@ -1,0 +1,9 @@
+<%= form_tag login_try_path do %>
+  <%= label_tag :login_id %>
+  <%= text_field_tag :login_id %>
+
+  <%= label_tag :password %>
+  <%= password_field_tag :password %>
+
+  <%= submit_tag('ログイン') %>
+<% end %>

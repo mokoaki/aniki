@@ -1,0 +1,28 @@
+<div id="parent_directories" class='waku'>
+  <%= write_parent_directories(@parent_directories) %>
+</div>
+
+<div id="header" class='waku'>
+  <%= button_tag '新規ディレクトリ', onclick: "new_directory(#{@directory_id})" %>
+  削除　カット　ペースト　パスワード変更
+</div>
+
+<div id="files" class='waku'>
+  <%= '(´・ω・｀)何もないお' if @file_objects.size == 0 %>
+
+  <div id="new_directory_form"></div>
+
+  <% @file_objects.each do |file_object| %>
+    <%= render :partial => 'file_object_line', :locals => { :file_object => file_object }  %>
+  <% end %>
+</div>
+
+<div class="waku">
+  <%= form_tag files_upload_path, {:multipart => true } do %>
+    <%= label_tag 'upload_files[]' %>
+    <%= file_field_tag 'upload_files[]', {required: true, multiple: true} %>
+    <%= hidden_field_tag :parent_directory_id, params[:id] %>
+
+    <%= submit_tag('ディレクトリ作成') %>
+  <% end %>
+</div>

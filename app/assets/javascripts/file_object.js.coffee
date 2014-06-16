@@ -1,26 +1,46 @@
-# Place all the behaviors and hooks related to the matching controller here.
-# All this logic will automatically be available in application.js.
-# You can use CoffeeScript in this file: http://coffeescript.org/
 
-@new_directory = (directory_id) ->
+@new_directory_form_open = ->
+  $('div#new_directory_form input#file_object_name').val('')
+  $('div#new_directory_form').show()
+  return true
+
+get_file_object_checkeds = () ->
+  file_object_checkeds = []
+
+  $('input.file_object_checks:checked').each ->
+    file_object_checkeds.push $(this).val()
+
+  return file_object_checkeds
+
+@delete_file_object_click = ->
+  if window.confirm('チェックしたファイルを削除します')
+    delete_file_object()    
+
+delete_file_object = ->
+  file_object_checkeds = get_file_object_checkeds()
+
   $.ajax
     type: 'post'
-    data: directory_id: directory_id
-    url: '/new_directory_form'
+    url: '/fo_destroy'
+    data: file_object_checkeds: file_object_checkeds
     success: (response) ->
-      $('div#new_directory_form').html(response)
+      for id in file_object_checkeds
+        $("div#files div#line_#{id}").remove()
+
       return true
 
   return true
 
-@new_directory_create = () ->
-  $.ajax
-    type: 'post'
-    url: '/directories'
-    data: name: $('input#new_directory_name').val(), parent_directory_id: $('input#new_directory_parent_directory_id').val()
-    success: (response) ->
-      $('div#new_directory_form').after(response)
-      $('div#new_directory_form').empty()
-      return true
 
-  return true
+
+# @new_directory_create = () ->
+#   $.ajax
+#     type: 'post'
+#     url: '/directories'
+#     data: name: 'moko', parent_directory_id: 1
+#     success: (response) ->
+#       $('div#new_directory_form').after(response)
+#       $('div#new_directory_form').empty()
+#       return true
+#
+#   return true

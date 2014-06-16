@@ -1,0 +1,19 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  username: 
+  password:
+  socket: /var/lib/mysql/mysql.sock
+
+development:
+  <<: *default
+  database: aniki_development
+
+test:
+  <<: *default
+  database: aniki_test
+
+production:
+  <<: *default
+  database: aniki_production

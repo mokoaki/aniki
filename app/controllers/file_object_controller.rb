@@ -19,20 +19,39 @@ class FileObjectController < ApplicationController
     redirect_to directory_path(parent_directory_id)
   end
 
-  def directory_create
-    @file_object = FileObject.new
-    @file_object.directory_save(params)
-
-    render :partial => 'file_object_line', :locals => { :file_object => @file_object }
+  def create_directory
+    @file_object = FileObject.new(new_directory_params)
+    @file_object.save
   end
 
   def new_directory_form
-    render :layout => false
+    render layout: false
+  end
+
+  def download
+    file_object = FileObject.find_by(id: params[:id])
+    send_file file_object.file_fullpath, filename: file_object.name
+  end
+
+  def destroy
+    file_objects = FileObject.where(id: params[:file_object_checkeds])
+
+    file_objects.each do |file_object|
+      file_object.go_to_bed
+    end
+
+    render layout: false
   end
 
   private
 
   def no_login_goto_root
     redirect_to(login_path) if !signed_in?
+  end
+
+  private
+
+  def new_directory_params
+    params.require(:file_object).permit(:name, :parent_directory_id, :object_mode)
   end
 end

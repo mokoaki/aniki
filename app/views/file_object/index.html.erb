@@ -3,14 +3,24 @@
 </div>
 
 <div id="header" class='waku'>
-  <%= button_tag '新規ディレクトリ', onclick: "new_directory(#{@directory_id})" %>
-  削除　カット　ペースト　パスワード変更
+  <%= button_tag '新規ディレクトリ', onclick: 'new_directory_form_open()' %>
+  <%= button_tag '削除', onclick: 'delete_file_object_click()' %>
+  カット　ペースト　パスワード変更
 </div>
 
 <div id="files" class='waku'>
   <%= '(´・ω・｀)何もないお' if @file_objects.size == 0 %>
 
-  <div id="new_directory_form"></div>
+  <div id="new_directory_form">
+    <%= form_for FileObject.new(parent_directory_id: params[:id], object_mode: 2), {url: :create_directory, remote: true} do |f| %>
+      <%= check_box_tag('', '', false, disabled: true) %>
+      <%= image_tag('icon_folder_alt.png') %>
+      <%= f.text_field :name %>
+      <%= f.hidden_field :parent_directory_id %>
+      <%= f.hidden_field :object_mode %>
+      <%= f.submit 'ディレクトリ作成', :data => {:disable_with => '作成中'} %>
+    <% end %>
+  </div>
 
   <% @file_objects.each do |file_object| %>
     <%= render :partial => 'file_object_line', :locals => { :file_object => file_object }  %>

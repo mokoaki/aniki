@@ -4,13 +4,13 @@ Rails.application.routes.draw do
   get  'login'       => 'users#login'
   post 'login_try'   => 'users#login_try'
 
-  get  'd/:id'       => 'file_object#index',       as: :directory
-  post 'directories' => 'file_object#directory_create',      as: :directory_create
+  get  'd/:id'              => 'file_object#index',              as: :directory
+  post 'directories'        => 'file_object#create_directory',   as: :create_directory
 
-  get  'f/:id'       => 'file_object#dowonload',   as: :file
+  get  'f/:id'       => 'file_object#download',   as: :file
   post 'files'       => 'file_object#files_upload',      as: :files_upload
 
-  post  'new_directory_form' => 'file_object#new_directory_form'
+  post 'fo_destroy'           => 'file_object#destroy'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

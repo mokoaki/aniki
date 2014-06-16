@@ -1,0 +1,2 @@
+$("div#new_directory_form").after("<%= escape_javascript(render(:partial => 'file_object_line', :locals => { :file_object => @file_object })) %>")
+$("div#new_directory_form").hide()

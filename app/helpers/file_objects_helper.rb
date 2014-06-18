@@ -1,4 +1,4 @@
-module FileObjectHelper
+module FileObjectsHelper
   def write_parent_directories(parent_directories)
     count = 0
     result = []
@@ -41,8 +41,6 @@ module FileObjectHelper
 
   def get_check_box(file_object)
     #ゴミ箱はチェックさせない
-    disabled_flg = file_object.is_trash? ? true : false
-
-    check_box_tag("file_object_checks_#{file_object.id}", file_object.id, false, disabled: disabled_flg, class: :file_object_checks)
+    check_box_tag("file_object_checks_#{file_object.id}", file_object.id, false, disabled: file_object.is_trash?, class: :file_object_checks)
   end
 end

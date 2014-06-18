@@ -1,0 +1,34 @@
+<div id="parent_directories" class='waku'>
+  <%= write_parent_directories(@parent_directories) %>
+</div>
+
+<div id="header" class='waku'>
+  <%= button_tag '新規ディレクトリ', id:'new_directory_form_open', onclick: 'new_directory_form_open()' %>
+  <%= button_tag '削除',           id:'delete_file_object_click', onclick: 'delete_file_object_click()' %>
+  <%= button_tag 'カット',         id:'cut_file_object_click',   onclick: 'cut_file_object_click()' %>
+  <%= button_tag 'ペースト',        id:'paste_file_object_click', onclick: "paste_file_object_click(#{params[:id]})", disabled: session[:file_object_checkeds].nil? %>
+  パスワード変更
+</div>
+
+<div id="files" class='waku'>
+  <%= '(´・ω・｀)何もないお' if @file_objects.size == 0 %>
+
+  <div id="new_directory_form">
+    <%= check_box_tag('', '', false, disabled: true) %>
+    <%= image_tag('icon_folder_alt.png') %>
+    <%= text_field_tag :name, '' %>
+    <%= hidden_field_tag :parent_directory_id, @current_directory_id %>
+    <%= button_tag 'ディレクトリ作成', onclick: "create_new_directory_click()" %>
+  </div>
+
+  <%= render @file_objects %>
+</div>
+
+<div class="waku">
+  <%= form_tag upload_path, {:multipart => true } do %>
+    <%= file_field_tag 'upload_files[]', {required: true, multiple: true} %>
+    <%= hidden_field_tag :parent_directory_id, params[:id] %>
+
+    <%= submit_tag('ファイルアップロード') %>
+  <% end %>
+</div>

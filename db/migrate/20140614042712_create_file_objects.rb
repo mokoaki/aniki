@@ -4,15 +4,17 @@ class CreateFileObjects < ActiveRecord::Migration
       t.string  :name
       t.integer :parent_directory_id
 
-      #1 :ゴミ箱
-      #2 :ディレクトリ
-      #3 :ファイル
+      #1 :ROOT
+      #2 :ゴミ箱
+      #3 :ディレクトリ
+      #4 :ファイル
       t.integer :object_mode
 
       t.string  :hash_name, limit: 64
       t.integer :size
 
-      t.timestamps
+      t.datetime  :created_at
+      #t.timestamps
     end
 
     add_index :file_objects, :parent_directory_id

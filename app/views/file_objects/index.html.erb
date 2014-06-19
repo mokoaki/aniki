@@ -6,8 +6,17 @@
   <%= button_tag '新規ディレクトリ', id:'new_directory_form_open', onclick: 'new_directory_form_open()' %>
   <%= button_tag '削除',           id:'delete_file_object_click', onclick: 'delete_file_object_click()' %>
   <%= button_tag 'カット',         id:'cut_file_object_click',   onclick: 'cut_file_object_click()' %>
-  <%= button_tag 'ペースト',        id:'paste_file_object_click', onclick: "paste_file_object_click(#{params[:id]})", disabled: session[:file_object_checkeds].nil? %>
+  <%= button_tag 'ペースト',        id:'paste_file_object_click', onclick: "paste_file_object_click()", disabled: session[:file_object_checkeds].nil? %>
   パスワード変更
+</div>
+
+<div class="waku">
+  <%= form_tag upload_path, {id: :file_upload_form, multipart: true } do %>
+    <%= file_field_tag 'upload_files[]', {required: true, multiple: true} %>
+    <%= hidden_field_tag :current_directory_id,        @current_directory_id %>
+    <%= hidden_field_tag :current_directory_id_digest, @current_directory_id_digest %>
+    <%= submit_tag('うｐ') %>
+  <% end %>
 </div>
 
 <div id="files" class='waku'>
@@ -17,18 +26,8 @@
     <%= check_box_tag('', '', false, disabled: true) %>
     <%= image_tag('icon_folder_alt.png') %>
     <%= text_field_tag :name, '' %>
-    <%= hidden_field_tag :parent_directory_id, @current_directory_id %>
     <%= button_tag 'ディレクトリ作成', onclick: "create_new_directory_click()" %>
   </div>
 
   <%= render @file_objects %>
-</div>
-
-<div class="waku">
-  <%= form_tag upload_path, {:multipart => true } do %>
-    <%= file_field_tag 'upload_files[]', {required: true, multiple: true} %>
-    <%= hidden_field_tag :parent_directory_id, params[:id] %>
-
-    <%= submit_tag('ファイルアップロード') %>
-  <% end %>
 </div>

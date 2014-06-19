@@ -1,32 +1,45 @@
 class FileObjectsController < ApplicationController
-  before_action :no_login_goto_root
+  before_action do
+    redirect_to(login_path) if !signed_in?
+  end
 
   def index
-    @current_directory_id = params[:id]
-
-    @file_objects       = FileObject.where(parent_directory_id: @current_directory_id).order(:object_mode, :name)
-    @parent_directories = FileObject.get_parent_directories(@current_directory_id)
+    @current_directory_id        = params[:id]
+    @current_directory_id_digest = FileObject.get_digest(@current_directory_id)
+    @file_objects                = FileObject.where(parent_directory_id: @current_directory_id)
+    @parent_directories          = FileObject.find_by(id: @current_directory_id).get_parent_directories
   end
 
   def upload
-    parent_directory_id = params[:parent_directory_id]
+    current_directory_id = FileObject.check_digest(params[:current_directory_id], params[:current_directory_id_digest])
 
-    params[:upload_files].each do |upload_file|
-      file_object = FileObject.new
-      file_object.file_save(upload_file, parent_directory_id)
+    if current_directory_id
+      current_file_object = FileObject.get_directory_by_id(current_directory_id)
+
+      params[:upload_files].each do |upload_file|
+        file_object = current_file_object.children.new
+        file_object.file_save(upload_file)
+      end
     end
 
-    redirect_to directory_path(parent_directory_id)
+    redirect_to :back
   end
 
   def create
-    file_object                     = FileObject.new
-    file_object.name                = params[:name]
-    file_object.parent_directory_id = params[:parent_directory_id]
-    file_object.object_mode         = 2
-    file_object.save
+    current_directory_id = FileObject.check_digest(params[:current_directory_id], params[:current_directory_id_digest])
 
-    render file_object
+    if current_directory_id
+      current_file_object = FileObject.get_directory_by_id(current_directory_id)
+
+      file_object             = current_file_object.children.new
+      file_object.name        = params[:name]
+      file_object.object_mode = 3
+      file_object.save
+
+      render file_object
+    else
+      render nothing: true
+    end
   end
 
   def download
@@ -50,28 +63,26 @@ class FileObjectsController < ApplicationController
   end
 
   def paste
-    directory_id = params[:directory_id].to_i
-    file_objects = FileObject.where(id: session[:file_object_checkeds])
+    current_directory_id = FileObject.check_digest(params[:current_directory_id], params[:current_directory_id_digest])
 
     @result_file_objects = []
 
-    file_objects.each do |file_object|
-      if file_object.parent_directory_id != directory_id
-        file_object.parent_directory_id = directory_id
-        file_object.save
+    if current_directory_id
+      current_file_object = FileObject.get_directory_by_id(current_directory_id)
+      file_objects = FileObject.where(id: session[:file_object_checkeds])
 
-        @result_file_objects << file_object
+      file_objects.each do |file_object|
+        if file_object.parent_directory_id != current_file_object.id
+          file_object.parent_directory_id = current_file_object.id
+          file_object.save
+
+          @result_file_objects << file_object
+        end
       end
     end
 
     session[:file_object_checkeds] = nil
 
     render @result_file_objects
-  end
-
-  private
-
-  def no_login_goto_root
-    redirect_to(login_path) if !signed_in?
   end
 end

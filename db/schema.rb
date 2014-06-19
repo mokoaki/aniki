@@ -20,7 +20,6 @@ ActiveRecord::Schema.define(version: 20140614042712) do
     t.string   "hash_name",           limit: 64
     t.integer  "size"
     t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   add_index "file_objects", ["object_mode"], name: "index_file_objects_on_object_mode", using: :btree

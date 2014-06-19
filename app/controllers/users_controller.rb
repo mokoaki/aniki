@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   def index
     if signed_in?
-      redirect_to directory_path(0)
+      redirect_to directory_path(1)
     else
       redirect_to login_path
     end

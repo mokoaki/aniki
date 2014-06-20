@@ -3,7 +3,7 @@ class CreateUsers < ActiveRecord::Migration
     create_table :users do |t|
       t.string  :login_id,        limit: 32
       t.string  :password_digest, limit: 60
-      t.string  :remember_token,  limit: 40
+      t.string  :remember_token,  limit: 64
       t.boolean :admin, default: false
 
       t.timestamps

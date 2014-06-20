@@ -1,16 +1,17 @@
-<div id="parent_directories" class='waku'>
-  <%= write_parent_directories(@parent_directories) %>
+<div id="parent_directories_list" class='waku'>
+  <%= render :partial => 'parent_directories_list', :locals => { parent_directories_list: @parent_directories_list } %>
 </div>
 
-<div id="header" class='waku'>
-  <%= button_tag '新規ディレクトリ', id:'new_directory_form_open', onclick: 'new_directory_form_open()' %>
-  <%= button_tag '削除',           id:'delete_file_object_click', onclick: 'delete_file_object_click()' %>
-  <%= button_tag 'カット',         id:'cut_file_object_click',   onclick: 'cut_file_object_click()' %>
-  <%= button_tag 'ペースト',        id:'paste_file_object_click', onclick: "paste_file_object_click()", disabled: session[:file_object_checkeds].nil? %>
+<div id="menu" class='waku'>
+  <%= button_tag '新規ディレクトリ', id: 'new_directory_menu_button',       onclick: 'new_directory_menu_button_click()' %>
+  <%= button_tag 'リネーム',         id: 'rename_file_object_menu_button', onclick: 'rename_file_object_menu_button_click()', disabled: true %>
+  <%= button_tag '削除',             id: 'delete_file_object_menu_button', onclick: 'delete_file_object_menu_button_click()', disabled: true %>
+  <%= button_tag 'カット',           id: 'cut_file_object_menu_button',    onclick: 'cut_file_object_menu_button_click()',    disabled: true %>
+  <%= button_tag 'ペースト',         id: 'paste_file_object_menu_button',  onclick: 'paste_file_object_menu_button_click()',  disabled: session[:file_object_checkeds].nil? %>
   パスワード変更
 </div>
 
-<div class="waku">
+<div id="upload" class="waku">
   <%= form_tag upload_path, {id: :file_upload_form, multipart: true } do %>
     <%= file_field_tag 'upload_files[]', {required: true, multiple: true} %>
     <%= hidden_field_tag :current_directory_id,        @current_directory_id %>
@@ -25,7 +26,7 @@
   <div id="new_directory_form">
     <%= check_box_tag('', '', false, disabled: true) %>
     <%= image_tag('icon_folder_alt.png') %>
-    <%= text_field_tag :name, '' %>
+    <%= text_field_tag :name, '', onkeypress: 'new_directory_form_name_keypress()'%>
     <%= button_tag 'ディレクトリ作成', onclick: "create_new_directory_click()" %>
   </div>
 

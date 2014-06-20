@@ -28,7 +28,7 @@ ActiveRecord::Schema.define(version: 20140614042712) do
   create_table "users", force: true do |t|
     t.string   "login_id",        limit: 32
     t.string   "password_digest", limit: 60
-    t.string   "remember_token",  limit: 40
+    t.string   "remember_token",  limit: 64
     t.boolean  "admin",                      default: false
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -21,11 +21,23 @@ class FileObject < ActiveRecord::Base
     end
 
     def get_digest(id)
-      Digest::SHA2.hexdigest(Rails.application.secrets.salt + id.to_i.to_s)
+      Digest::SHA2.hexdigest(Rails.application.secrets.salt + id.to_i.to_s)[0, 10]
     end
 
     def check_digest(id, digest)
       digest == get_digest(id) ? id : nil
+    end
+
+    def check_digests(data)
+      result = []
+
+      data.each do |key, value|
+        if check_digest(value['id'], value['id_digest'])
+          result << value['id']
+        end
+      end
+
+      result.uniq
     end
   end
 
@@ -68,8 +80,8 @@ class FileObject < ActiveRecord::Base
     file_save_path + hash_name
   end
 
-  def get_parent_directories
-    [{id: id, name: name}] + (parent_directory_id == 0 ? [] : FileObject.get_directory_by_id(parent_directory_id).get_parent_directories)
+  def get_parent_directories_list
+    [{id: id, name: name}] + (parent_directory_id == 0 ? [] : parent_directory.get_parent_directories_list)
   end
 
   #遡るとゴミ箱内かどうか？
@@ -82,11 +94,6 @@ class FileObject < ActiveRecord::Base
     end
 
     parent_directory.ancestor_trash?
-  end
-
-  def goto_trash
-    self.parent_directory_id = 2
-    save
   end
 
   def go_to_bed
@@ -103,5 +110,10 @@ class FileObject < ActiveRecord::Base
 
   def file_save_path
     Rails.application.secrets.data_path + hash_name[0, 2] + '/'
+  end
+
+  def goto_trash
+    self.parent_directory_id = 2
+    save
   end
 end

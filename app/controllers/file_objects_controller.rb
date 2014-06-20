@@ -7,7 +7,7 @@ class FileObjectsController < ApplicationController
     @current_directory_id        = params[:id]
     @current_directory_id_digest = FileObject.get_digest(@current_directory_id)
     @file_objects                = FileObject.where(parent_directory_id: @current_directory_id)
-    @parent_directories          = FileObject.find_by(id: @current_directory_id).get_parent_directories
+    @parent_directories_list     = FileObject.find_by(id: @current_directory_id).get_parent_directories_list
   end
 
   def upload
@@ -48,17 +48,21 @@ class FileObjectsController < ApplicationController
   end
 
   def destroy
-    file_objects = FileObject.where(id: params[:file_object_checkeds])
+    file_object_ids = FileObject.check_digests(params[:file_object_checkeds])
 
-    file_objects.each do |file_object|
-      file_object.go_to_bed
+    if file_object_ids
+      file_objects = FileObject.where(id: file_object_ids)
+
+      file_objects.each do |file_object|
+        file_object.go_to_bed
+      end
     end
 
     render nothing: true
   end
 
   def cut
-    session[:file_object_checkeds] = params[:file_object_checkeds].uniq
+    session[:file_object_checkeds] = FileObject.check_digests(params[:file_object_checkeds])
     render nothing: true
   end
 

@@ -89,4 +89,16 @@ class FileObjectsController < ApplicationController
 
     render @result_file_objects
   end
+
+  def rename
+    file_object_id = FileObject.check_digest(params[:file_object_id], params[:file_object_id_digest])
+
+    if file_object_id
+      file_object = FileObject.find_by(id: file_object_id)
+      file_object.name = params[:file_object_name]
+      file_object.save
+    end
+
+    render nothing: true
+  end
 end

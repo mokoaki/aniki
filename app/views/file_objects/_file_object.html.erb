@@ -11,8 +11,8 @@
   </span>
 
   <span id="rename_object_<%= file_object.id %>" class="rename_object">
-    <%= text_field_tag("rename_#{file_object.id}", '', class: 'rename_field') %>
-    <%= button_tag('変更', id: 'rename_karino_name', onclick: "rename_karino_name_click()") %>
+    <%= text_field_tag("rename_#{file_object.id}", '', class: 'rename_field', onkeypress: "rename_keypress(#{file_object.id})") %>
+    <%= button_tag('変更', onclick: "rename_button_click(#{file_object.id})") %>
   </span>
 
   <% if file_object.is_file? %>

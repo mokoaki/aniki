@@ -43,6 +43,10 @@ get_file_object_checkeds = ->
       new_directory_form.after(response)
       new_directory_form.hide()
 
+@new_directory_form_name_keypress = ->
+  if event.keyCode == 13
+    create_new_directory_click()
+
 @rename_file_object_menu_button_click = ->
   file_object_checkeds = get_file_object_checkeds()
 
@@ -54,11 +58,34 @@ get_file_object_checkeds = ->
     rename_input  = rename_span.find("input#rename_#{check.id}")
 
     rename_input.val(name_a.text())
-    name_span.hide()
     rename_span.show()
+    name_span.hide()
 
-@rename_karino_name_click = ->
-  alert 'wa-i'
+  return true
+
+@rename_button_click = (rename_button_id)->
+  line_div                     = $("div#files div#line_#{rename_button_id}")
+  name_span                    = line_div.find("span#name_object_#{rename_button_id}")
+  rename_span                  = line_div.find("span#rename_object_#{rename_button_id}")
+  name_a                       = name_span.find("a#link_#{rename_button_id}")
+  rename_input                 = rename_span.find("input#rename_#{rename_button_id}")
+  rename_file_object_id_digest = line_div.find("input#file_object_checks_#{rename_button_id}").data('check_id_digest')
+
+  $.ajax
+    type: 'post'
+    url: '/rename'
+    data:
+      file_object_id: rename_button_id
+      file_object_id_digest: rename_file_object_id_digest
+      file_object_name: rename_input.val()
+    success: ->
+      name_a.text(rename_input.val())
+      name_span.show()
+      rename_span.hide()
+
+@rename_keypress = (rename_field_id) ->
+  if event.keyCode == 13
+    rename_button_click(rename_field_id)
 
 @delete_file_object_menu_button_click = ->
   file_object_checkeds = get_file_object_checkeds()
@@ -101,7 +128,3 @@ get_file_object_checkeds = ->
     success: (response) ->
       paste_file_object_menu_button.prop('disabled', true)
       new_directory_form.after(response)
-
-@new_directory_form_name_keypress = ->
-  if event.keyCode == 13
-    create_new_directory_click()

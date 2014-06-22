@@ -1,5 +1,6 @@
 class FileObject < ActiveRecord::Base
   validates :name, presence: true
+  validates :name, length: { minimum: 1 }
   validates :parent_directory_id, presence: true
   validates :object_mode,         presence: true
 
@@ -13,6 +14,26 @@ class FileObject < ActiveRecord::Base
       FileUtils.rm(file_fullpath) rescue nil
       FileUtils.rmdir(file_save_path) rescue nil
     end
+  end
+
+  before_save do
+    self.name ||= ''
+    self.name.scrub!(' ')
+    self.name.gsub!("\n", ' ')
+    self.name.gsub!("\t", ' ')
+    self.name.gsub!("\\", ' ')
+    self.name.gsub!('　', ' ')
+    self.name.gsub!(/ +/, ' ')
+    self.name.strip!
+    self.name.gsub!('"', '”')
+    self.name.gsub!('<', '＜')
+    self.name.gsub!('>', '＞')
+    self.name.gsub!('*', '＊')
+    self.name.gsub!(':', '：')
+    self.name.gsub!(';', '；')
+    self.name.gsub!('?', '？')
+    self.name.gsub!('|', '｜')
+    self.name.gsub!('/', '／')
   end
 
   class << self

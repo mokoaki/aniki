@@ -8,7 +8,7 @@
   <%= button_tag '削除',             id: 'delete_file_object_menu_button', onclick: 'delete_file_object_menu_button_click()', disabled: true %>
   <%= button_tag 'カット',           id: 'cut_file_object_menu_button',    onclick: 'cut_file_object_menu_button_click()',    disabled: true %>
   <%= button_tag 'ペースト',         id: 'paste_file_object_menu_button',  onclick: 'paste_file_object_menu_button_click()',  disabled: session[:file_object_checkeds].nil? %>
-  パスワード変更
+  <%= button_tag 'パスワード変更' %>
 </div>
 
 <div id="upload" class="waku">
@@ -26,7 +26,7 @@
   <div id="new_directory_form">
     <%= check_box_tag('', '', false, disabled: true) %>
     <%= image_tag('icon_folder_alt.png') %>
-    <%= text_field_tag :name, '', onkeypress: 'new_directory_form_name_keypress()'%>
+    <%= text_field_tag :name, '', onkeypress: 'new_directory_form_name_keypress()' %>
     <%= button_tag 'ディレクトリ作成', onclick: "create_new_directory_click()" %>
   </div>
 

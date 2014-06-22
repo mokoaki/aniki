@@ -1,7 +1,7 @@
 <% count = 0 %>
 
 <% parent_directories_list.reverse_each do |parent_directory| %>
-  <div style="margin-left:#{count * 20}px;">
+  <div style="margin-left:<%= count * 20 %>px;">
    <%= (count == 0 ? ' ' : '└') %>
    <%= link_to_unless_current(parent_directory[:name], directory_path(parent_directory[:id])) %>
   </div>

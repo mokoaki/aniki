@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   post 'destroy'     => 'file_objects#destroy'
   post 'cut'         => 'file_objects#cut'
   post 'paste'       => 'file_objects#paste'
+  post 'rename'      => 'file_objects#rename'
 
   get  'f/:id'       => 'file_objects#download',  as: :file
   post 'upload'      => 'file_objects#upload',    as: :upload

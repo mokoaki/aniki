@@ -1,11 +1,16 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe User do
-  before do
-    @user = User.create(login_id: "moko")
-  end
+  context '必要メソッド' do
+    before { @user = User.new }
 
-  let(:user) { User.find_by(login_id: 'moko') }
+    subject { @user }
 
-  expect(user).to respond_to(:login_id)
+    it { should respond_to(:login_id) }
+    it { should respond_to(:password_digest) }
+    it { should respond_to(:remember_token) }
+    it { should respond_to(:admin) }
+    it { should respond_to(:created_at) }
+    it { should respond_to(:updated_at) }
+ end
 end

@@ -1,8 +1,13 @@
 class FileObject < ActiveRecord::Base
-  validates :name, presence: true
-  validates :name, length: { minimum: 1 }
-  validates :parent_directory_id, presence: true
-  validates :object_mode,         presence: true
+  validates :name, presence: true, length: { minimum: 1 }
+  validates :parent_directory_id,  presence: true
+  validates :object_mode,          presence: true, inclusion: [1, 2, 3, 4]
+
+  validate do
+    if !is_root? && parent_directory_id == 0
+      errors.add(:parent_directory_id, 'use 0 only root directory')
+    end
+  end
 
   belongs_to :parent_directory, class_name: :FileObject, foreign_key: :parent_directory_id
   has_many   :children,         class_name: :FileObject, foreign_key: :parent_directory_id, dependent: :destroy
@@ -26,6 +31,7 @@ class FileObject < ActiveRecord::Base
     self.name.gsub!(/ +/, ' ')
     self.name.strip!
     self.name.gsub!('"', '”')
+    self.name.gsub!("'", '’')
     self.name.gsub!('<', '＜')
     self.name.gsub!('>', '＞')
     self.name.gsub!('*', '＊')
@@ -42,7 +48,7 @@ class FileObject < ActiveRecord::Base
     end
 
     def get_digest(id)
-      Digest::SHA2.hexdigest(Rails.application.secrets.salt + id.to_i.to_s)[0, 10]
+      Digest::SHA2.hexdigest(Rails.application.secrets.salt + id.to_i.to_s)
     end
 
     def check_digest(id, digest)
@@ -62,16 +68,16 @@ class FileObject < ActiveRecord::Base
     end
   end
 
-  def file_save(upload_file)
-    self.name                = upload_file.original_filename
+  def file_save(upload_file, test_hash = nil)
+    self.name                = test_hash ? 'test' : upload_file.original_filename
     self.object_mode         = 4
-    self.hash_name           = SecureRandom.hex(32)
-    self.size                = upload_file.size
+    self.hash_name           = test_hash || SecureRandom.hex(32)
+    self.size                = test_hash ? 0 : upload_file.size
 
     FileUtils.mkdir_p file_save_path
 
     File.open(file_fullpath, 'wb') do |fo|
-      fo.write(upload_file.read)
+      fo.write(test_hash ? '' : upload_file.read)
     end
 
     save
@@ -119,11 +125,11 @@ class FileObject < ActiveRecord::Base
 
   def go_to_bed
     if is_root? || is_trash?
-      return
+      return false
     elsif ancestor_trash?
       destroy
     else
-      goto_trash
+      go_to_trash
     end
   end
 
@@ -133,7 +139,7 @@ class FileObject < ActiveRecord::Base
     Rails.application.secrets.data_path + hash_name[0, 2] + '/'
   end
 
-  def goto_trash
+  def go_to_trash
     self.parent_directory_id = 2
     save
   end

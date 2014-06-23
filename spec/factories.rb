@@ -1,4 +1,14 @@
 FactoryGirl.define do
+  # factory :, class: FileObject do
+  #   factory :moko do
+  #     name 'moko'
+  #   end
+  #
+  #   factory :aho do
+  #     name 'aho'
+  #   end
+  # end
+
   factory :root_object, class: FileObject do
     id 1
     name 'root'
@@ -39,9 +49,9 @@ FactoryGirl.define do
   end
 
   factory :user do
-    id 1
     login_id 'mokomoko'
+    #sequence(:login_id) { |i| "mokomoko#{i}" }
     password 'abcdefghij'
-    password_confirm 'abcdefghij'
+    password_confirmation 'abcdefghij'
   end
 end

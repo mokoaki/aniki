@@ -22,11 +22,10 @@ ActiveRecord::Schema.define(version: 20140614042712) do
     t.datetime "created_at"
   end
 
-  add_index "file_objects", ["object_mode"], name: "index_file_objects_on_object_mode", using: :btree
   add_index "file_objects", ["parent_directory_id"], name: "index_file_objects_on_parent_directory_id", using: :btree
 
   create_table "users", force: true do |t|
-    t.string   "login_id",        limit: 32
+    t.string   "login_id",        limit: 64
     t.string   "password_digest", limit: 60
     t.string   "remember_token",  limit: 64
     t.boolean  "admin",                      default: false

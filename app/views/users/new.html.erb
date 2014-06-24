@@ -1,0 +1,5 @@
+<%= form_for user_create_path do |f| %>
+  <%= render :partial => 'user_form', :locals => { f: f } %>
+
+  <%= f.submit('作成') %>
+<% end %>

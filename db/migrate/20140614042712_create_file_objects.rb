@@ -14,10 +14,8 @@ class CreateFileObjects < ActiveRecord::Migration
       t.integer :size
 
       t.datetime  :created_at
-      #t.timestamps
     end
 
     add_index :file_objects, :parent_directory_id
-    add_index :file_objects, :object_mode
   end
 end

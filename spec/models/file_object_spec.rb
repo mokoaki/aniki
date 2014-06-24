@@ -56,7 +56,7 @@ describe FileObject do
         expect(file_object).to be_invalid
       end
 
-      it 'space invalid' do
+      it 'null_character invalid' do
         file_object.name = ''
         expect(file_object).to be_invalid
       end
@@ -73,7 +73,7 @@ describe FileObject do
         expect(file_object).to be_invalid
       end
 
-      it 'space invalid' do
+      it 'null_character invalid' do
         file_object.parent_directory_id = ''
         expect(file_object).to be_invalid
       end
@@ -106,7 +106,7 @@ describe FileObject do
         expect(file_object).to be_invalid
       end
 
-      it 'space invalid' do
+      it 'null_character invalid' do
         file_object.object_mode = ''
         expect(file_object).to be_invalid
       end

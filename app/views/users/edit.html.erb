@@ -1,0 +1,5 @@
+<%= form_for user_update_path do |f| %>
+  <%= render :partial => 'user_form', :locals => { f: f } %>
+
+  <%= f.submit('変更') %>
+<% end %>

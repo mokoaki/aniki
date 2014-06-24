@@ -27,9 +27,14 @@ end
 
 group :test do
   gem 'factory_girl_rails'
-  #gem 'selenium-webdriver', '2.35.1'
   #gem 'capybara'
+  #gem 'selenium-webdriver', '2.35.1'
   #gem 'capybara-webkit'
+
+  ###capybaraはSeleniumのdriverがデフォで入る？
+  ###yum install xvfb
+  ###gem 'headless'
+  ###http://d.hatena.ne.jp/sandmark/20120324/1332590065
 end
 
 gem 'bcrypt'

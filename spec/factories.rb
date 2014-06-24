@@ -37,4 +37,11 @@ FactoryGirl.define do
     hash_name 'aaaa'
     size 100
   end
+
+  factory :user do
+    id 1
+    login_id 'mokomoko'
+    password 'abcdefghij'
+    password_confirm 'abcdefghij'
+  end
 end

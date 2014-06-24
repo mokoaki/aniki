@@ -1,7 +1,7 @@
 class CreateFileObjects < ActiveRecord::Migration
   def change
     create_table :file_objects do |t|
-      t.string  :name
+      t.string  :name, limit: 255
       t.integer :parent_directory_id
 
       #1 :ROOT

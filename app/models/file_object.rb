@@ -1,5 +1,5 @@
 class FileObject < ActiveRecord::Base
-  validates :name, presence: true, length: { minimum: 1 }
+  validates :name, presence: true, length: { in: (1..255) }
   validates :parent_directory_id,  presence: true
   validates :object_mode,          presence: true, inclusion: [1, 2, 3, 4]
 

@@ -39,13 +39,18 @@ describe User do
         expect(user).to be_invalid
       end
 
-      it 'AAAAA invalid' do
-        user.login_id = 'AAAAA'
+      it 'A * 5 invalid' do
+        user.login_id = 'A' * 5
         expect(user).to be_invalid
       end
 
-      it 'AAAAAA valid' do
-        user.login_id = 'AAAAAA'
+      it 'space * 6 invalid' do
+        user.login_id = ' ' * 6
+        expect(user).to be_invalid
+      end
+
+      it 'A * 6 valid' do
+        user.login_id = 'A' * 6
         expect(user).to be_valid
       end
 
@@ -89,15 +94,21 @@ describe User do
         expect(user).to be_invalid
       end
 
-      it 'AAAAA invalid' do
-        temp_user.password              = 'AAAAA'
-        temp_user.password_confirmation = 'AAAAA'
+      it 'A * 5 invalid' do
+        temp_user.password              = 'A' * 5
+        temp_user.password_confirmation = 'A' * 5
         expect(user).to be_invalid
       end
 
-      it 'AAAAAA valid' do
-        temp_user.password              = 'AAAAAA'
-        temp_user.password_confirmation = 'AAAAAA'
+      it 'space * 6 invalid' do
+        temp_user.password              = ' ' * 6
+        temp_user.password_confirmation = ' ' * 6
+        expect(user).to be_invalid
+      end
+
+      it 'A * 6 valid' do
+        temp_user.password              = 'A' * 6
+        temp_user.password_confirmation = 'A' * 6
         expect(user).to be_valid
       end
 

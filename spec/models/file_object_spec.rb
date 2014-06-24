@@ -61,9 +61,34 @@ describe FileObject do
         expect(file_object).to be_invalid
       end
 
+      it 'space invalid' do
+        file_object.name = ' '
+        expect(file_object).to be_invalid
+      end
+
       it 'A valid' do
         file_object.name = 'A'
         expect(file_object).to be_valid
+      end
+
+      it 'A * 255 valid' do
+        file_object.name = 'A' * 255
+        expect(file_object).to be_valid
+      end
+
+      it 'A * 256 invalid' do
+        file_object.name = 'A' * 256
+        expect(file_object).to be_invalid
+      end
+
+      it 'あ * 255 valid' do
+        file_object.name = 'あ' * 255
+        expect(file_object).to be_valid
+      end
+
+      it 'あ * 256 invalid' do
+        file_object.name = 'あ' * 256
+        expect(file_object).to be_invalid
       end
     end
 
@@ -75,6 +100,11 @@ describe FileObject do
 
       it 'null_character invalid' do
         file_object.parent_directory_id = ''
+        expect(file_object).to be_invalid
+      end
+
+      it 'space invalid' do
+        file_object.parent_directory_id = ' '
         expect(file_object).to be_invalid
       end
 
@@ -108,6 +138,11 @@ describe FileObject do
 
       it 'null_character invalid' do
         file_object.object_mode = ''
+        expect(file_object).to be_invalid
+      end
+
+      it 'space invalid' do
+        file_object.object_mode = ' '
         expect(file_object).to be_invalid
       end
 

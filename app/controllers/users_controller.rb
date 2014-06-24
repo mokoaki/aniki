@@ -17,12 +17,11 @@ class UsersController < ApplicationController
     user = User.find_by(login_id: params[:login_id].downcase)
 
     if user && user.authenticate(params[:password])
-      #認証されたユーザをログインさせる
       sign_in user
 
       redirect_to root_path
     else
-      #flash.now[:error] = 'Invalid email/password combination'
+      flash.now[:error] = 'パス違くね？'
 
       render :login
     end
@@ -36,7 +35,7 @@ class UsersController < ApplicationController
     user = current_user
     user.update_attributes(user_params)
 
-    flash[:notice] = '更新した'
+    flash[:notice] = 'おｋ'
     redirect_to edit_user_path
   end
 
@@ -46,7 +45,7 @@ class UsersController < ApplicationController
 
   def create
     User.create(user_params)
-    flash[:notice] = 'つくた'
+    flash[:notice] = 'おｋ'
     redirect_to root_path
   end
 

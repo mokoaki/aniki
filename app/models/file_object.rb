@@ -1,7 +1,7 @@
 class FileObject < ActiveRecord::Base
   validates :name, presence: true, length: { in: (1..255) }
   validates :parent_directory_id,  presence: true
-  validates :object_mode,          presence: true, inclusion: [1, 2, 3, 4]
+  validates :object_mode,          inclusion: [1, 2, 3, 4]
 
   validate do
     if !is_root? && parent_directory_id == 0
@@ -16,8 +16,8 @@ class FileObject < ActiveRecord::Base
 
   before_destroy do
     if is_file?
-      FileUtils.rm(file_fullpath) rescue nil
-      FileUtils.rmdir(file_save_path) rescue nil
+      FileUtils.rm(file_fullpath) rescue true
+      FileUtils.rmdir(file_save_path) rescue true
     end
   end
 
@@ -47,6 +47,10 @@ class FileObject < ActiveRecord::Base
       find_by(id: directory_id, object_mode: [1, 2, 3])
     end
 
+    def get_trash_object
+      FileObject.find_by(object_mode: 2)
+    end
+
     def get_digest(id)
       Digest::SHA2.hexdigest(Rails.application.secrets.salt + id.to_i.to_s)
     end
@@ -58,7 +62,7 @@ class FileObject < ActiveRecord::Base
     def check_digests(data)
       result = []
 
-      data.each do |key, value|
+      data.each_value do |value|
         if check_digest(value['id'], value['id_digest'])
           result << value['id']
         end
@@ -108,7 +112,7 @@ class FileObject < ActiveRecord::Base
   end
 
   def get_parent_directories_list
-    [{id: id, name: name}] + (parent_directory_id == 0 ? [] : parent_directory.get_parent_directories_list)
+    [{ id: id, name: name }] + (is_root? ? [] : parent_directory.get_parent_directories_list)
   end
 
   #遡るとゴミ箱内かどうか？
@@ -140,7 +144,7 @@ class FileObject < ActiveRecord::Base
   end
 
   def go_to_trash
-    self.parent_directory_id = 2
+    self.parent_directory_id = FileObject.get_trash_object.id
     save
   end
 end

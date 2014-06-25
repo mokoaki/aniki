@@ -148,9 +148,9 @@ describe User do
       test2 = User.new_remember_token
 
       expect(test1.size).to eq(22)
-      expect(test1).to match(/\A[0-9a-zA-Z_-]+\z/)
+      expect(test1).to match(/\A[\w-]+\z/)
       expect(test2.size).to eq(22)
-      expect(test2).to match(/\A[0-9a-zA-Z_-]+\z/)
+      expect(test2).to match(/\A[\w-]+\z/)
       expect(test1).not_to eq(test2)
     end
 

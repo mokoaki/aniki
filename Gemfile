@@ -23,6 +23,8 @@ group :development do
   gem "spring"
   gem 'spring-commands-rspec'
   gem 'pry-rails'
+  gem 'guard-rspec'
+  gem 'guard-spring'
 end
 
 group :test do

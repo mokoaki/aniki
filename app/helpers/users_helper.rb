@@ -42,13 +42,13 @@ module UsersHelper
   #  end
   #end
 
-  #def sign_out
-  #  #current_userを消して
-  #  self.current_user = nil
-  #
-  #  #クッキーも消す
-  #  cookies.delete(:remember_token)
-  #end
+  def sign_out
+    #current_userを消して
+    self.current_user = nil
+
+    #クッキーも消す
+    cookies.delete(:remember_token)
+  end
 
   #def redirect_back_or(default)
   #  redirect_to(session[:return_to] || default)

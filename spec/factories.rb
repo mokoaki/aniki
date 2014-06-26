@@ -40,8 +40,8 @@ FactoryGirl.define do
   end
 
   factory :user do
-    login_id 'mokomoko'
-    password 'abcdefghij'
-    password_confirmation 'abcdefghij'
+    login_id 'mokoaki'
+    password 'mokoaki'
+    password_confirmation 'mokoaki'
   end
 end

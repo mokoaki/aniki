@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   get  'login'       => 'users#login'
   post 'login_try'   => 'users#login_try'
+  get  'logout'      => 'users#logout'
 
   resources :users, :only => [:edit, :update, :new, :create]
 

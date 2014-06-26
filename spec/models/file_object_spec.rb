@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe FileObject do
   before { @file_object = FactoryGirl.build(:file_object) }
+  let(:data_path) { Rails.application.secrets.data_path }
 
   context 'methods' do
     it 'columns' do
@@ -32,6 +33,7 @@ describe FileObject do
 
     it 'class methods' do
       expect(FileObject).to respond_to(:get_directory_by_id)
+      expect(FileObject).to respond_to(:get_root_object)
       expect(FileObject).to respond_to(:get_trash_object)
       expect(FileObject).to respond_to(:get_digest)
       expect(FileObject).to respond_to(:check_digest)
@@ -191,15 +193,48 @@ describe FileObject do
   end
 
   describe 'event' do
-    it 'delete file' do
-      @file_object.hash_name = 'zz'
-      FileUtils.mkdir_p Rails.application.secrets.data_path + 'zz'
-      FileUtils.touch Rails.application.secrets.data_path + 'zz/zz'
-      @file_object.destroy
+    context 'before_destroy' do
+      it 'delete file' do
+        @file_object.hash_name = 'zz'
+        @file_object.save
+        FileUtils.mkdir_p data_path + 'zz'
+        FileUtils.touch data_path + 'zz/zz'
+        @file_object.destroy
 
-      expect(FileTest.exist?(Rails.application.secrets.data_path + 'zz/zz')).to be_falsy
-      expect(FileTest.exist?(Rails.application.secrets.data_path + 'zz')).to be_falsy
-      expect(@file_object.destroyed?).to be_truthy
+        expect(FileTest.exist?(data_path + 'zz/zz')).to be_falsy
+        expect(FileTest.exist?(data_path + 'zz')).to be_falsy
+        expect(@file_object.destroyed?).to be_truthy
+      end
+
+      it 'delete directory' do
+        directory_object = FactoryGirl.create(:directory_object)
+
+        file_object1 = FactoryGirl.build(:file_object)
+        file_object1.parent_directory_id = directory_object.id
+        file_object1.hash_name = 'zx'
+        file_object1.save
+        FileUtils.mkdir_p data_path + 'zx'
+        FileUtils.touch data_path + 'zx/zx'
+
+        file_object2 = FactoryGirl.build(:file_object)
+        file_object2.parent_directory_id = directory_object.id
+        file_object2.hash_name = 'zw'
+        file_object2.save
+        FileUtils.mkdir_p data_path + 'zw'
+        FileUtils.touch data_path + 'zw/zw'
+
+        directory_object.destroy
+
+        expect(FileTest.exist?(data_path + 'zx/zx')).to be_falsy
+        expect(FileTest.exist?(data_path + 'zx')).to be_falsy
+        expect(FileObject.exists?(file_object1.id)).to be_falsy
+
+        expect(FileTest.exist?(data_path + 'zw/zw')).to be_falsy
+        expect(FileTest.exist?(data_path + 'zw')).to be_falsy
+        expect(FileObject.exists?(file_object2.id)).to be_falsy
+
+        expect(directory_object.destroyed?).to be_truthy
+      end
     end
 
     it 'before_save' do
@@ -219,6 +254,10 @@ describe FileObject do
       it 'if file' do
         expect(FileObject.get_directory_by_id(@file_object.id)).to eq(nil)
       end
+    end
+
+    it 'get_root_object' do
+      expect(FileObject.get_root_object).to eq(FileObject.find_by(object_mode: 1))
     end
 
     it 'get_trash_object' do
@@ -252,7 +291,7 @@ describe FileObject do
       id2 = '2'
       id3 = '3'
       digest1 = Digest::SHA2.hexdigest(Rails.application.secrets.salt + id1.to_i.to_s)
-      digest2 = ''
+      digest2 = 'hoge'
       digest3 = Digest::SHA2.hexdigest(Rails.application.secrets.salt + id3.to_i.to_s)
       data = {
               'hoge1' => { 'id' => id1, 'id_digest' => digest1 },
@@ -271,7 +310,7 @@ describe FileObject do
       child_object.file_save(nil, 'zy')
 
       expect(child_object.persisted?).to be_truthy
-      expect(FileTest.exist?(Rails.application.secrets.data_path + 'zy/zy')).to be_truthy
+      expect(FileTest.exist?(data_path + 'zy/zy')).to be_truthy
 
       child_object.destroy
     end
@@ -335,7 +374,7 @@ describe FileObject do
 
     it 'file_fullpath' do
       @file_object.hash_name = 'zz'
-      expect(@file_object.file_fullpath).to eq(Rails.application.secrets.data_path + 'zz/zz')
+      expect(@file_object.file_fullpath).to eq(data_path + 'zz/zz')
     end
 
     context 'get_parent_directories_list' do
@@ -373,12 +412,12 @@ describe FileObject do
     end
 
     context 'go_to_bed' do
-      it 'rootならfalse' do
+      it '自分がrootならfalse' do
         root_object = FactoryGirl.build(:root_object)
         expect(root_object.go_to_bed).to be_falsy
       end
 
-      it 'ゴミ箱ならfalse' do
+      it '自分がゴミ箱ならfalse' do
         trash_object = FactoryGirl.build(:trash_object)
         expect(trash_object.go_to_bed).to be_falsy
       end
@@ -405,7 +444,7 @@ describe FileObject do
   describe 'private methods' do
     it 'file_save_path' do
       @file_object.hash_name = 'zz'
-      expect(@file_object.send(:file_save_path)).to eq(Rails.application.secrets.data_path + 'zz/')
+      expect(@file_object.send(:file_save_path)).to eq(data_path + 'zz/')
     end
 
     it 'go_to_trash' do

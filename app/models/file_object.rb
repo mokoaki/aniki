@@ -47,6 +47,10 @@ class FileObject < ActiveRecord::Base
       find_by(id: directory_id, object_mode: [1, 2, 3])
     end
 
+    def get_root_object
+      FileObject.find_by(object_mode: 1)
+    end
+
     def get_trash_object
       FileObject.find_by(object_mode: 2)
     end
@@ -115,14 +119,10 @@ class FileObject < ActiveRecord::Base
     [{ id: id, name: name }] + (is_root? ? [] : parent_directory.get_parent_directories_list)
   end
 
-  #遡るとゴミ箱内かどうか？
+  #遡るとゴミ箱？
   def ancestor_trash?
-    case true
-    when is_root?
-      return false
-    when is_trash?
-      return true
-    end
+    return false if is_root?
+    return true  if is_trash?
 
     parent_directory.ancestor_trash?
   end

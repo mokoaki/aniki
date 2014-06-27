@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe "IntegrationTests" do#, :type => :request do
+describe "IntegrationTests", js: true do #, :type => :request do
   describe '未ログイン状態' do
     context 'root_path' do
       it 'ログイン画面は表示できる' do
@@ -26,12 +26,11 @@ describe "IntegrationTests" do#, :type => :request do
         it '成功' do
           visit root_path
           user = FactoryGirl.create(:user)
-
-          puts User.all.inspect
-
           FactoryGirl.create(:root_object)
+
           fill_in 'login_id', with: user.login_id
           fill_in 'password', with: user.password
+
           click_button 'ログイン'
 
           expect(current_path).to eq(directory_path(FileObject.get_root_object.id))
@@ -62,21 +61,37 @@ describe "IntegrationTests" do#, :type => :request do
     it '新規ディレクトリ' do #, js: true do
       #moko = find('div#new_directory_form')
       #save_screenshot('/home/moko/file.png')
-      puts '============'
-      puts current_path
-      puts find('div#files').inspect
-      puts find('div#files').visible?
-      puts find('div#new_directory_form').visible?
+      #puts '============'
+      #puts current_path
+      #puts find('div#files').inspect
+      #puts find('div#files').visible?
+      #puts find('div#new_directory_form').visible?
+      #puts find('div#new_directory_form', visible: true).visible?
 
-      #puts find('div#new_directory_form', visible: true).inspect #.visible?
-      #puts find('div#new_directory_form', visible: false).inspect #.visible?
-      #click_button '新規ディレクトリ'
+      expect(find('div#new_directory_form', visible: false).visible?).to be_falsy
+
+      click_button '新規ディレクトリ'
       #puts '----------------'
       #puts find('div#new_directory_form').inspect #.visible?
       #moko2 = find('div#new_directory_form')
       #puts moko2.inspect
 
       #expect(page).not_to have_content('ディレクトリ作成')
+
+      expect(find('div#new_directory_form', visible: true).visible?).to be_truthy
+
+      fill_in 'name', with: '新規ディレクトリ名'
+
+      #expect(find("#not_found_id")).to raise_error(Capybara::ElementNotFound)
+
+      files_div = find('div#files')
+
+      expect(files_div).not_to have_content('新規ディレクトリ名')
+
+      click_button 'ディレクトリ作成'
+
+      expect(files_div).to have_content('新規ディレクトリ名')
+
 
     end
   end

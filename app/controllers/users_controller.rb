@@ -20,20 +20,13 @@ class UsersController < ApplicationController
 
   def login_try
     user = User.find_by(login_id: params[:login_id].downcase)
-logger.debug User.all.inspect
-logger.debug user.inspect
-logger.debug 1
     if user && user.authenticate(params[:password])
-logger.debug 2
       logger.debug 'ログイン成功'
-logger.debug 3
       sign_in user
 
       redirect_to root_path
     else
-logger.debug 4
       logger.debug 'ログイン失敗'
-logger.debug 5
       flash.now[:error] = 'パス違くね？'
 
       render :login

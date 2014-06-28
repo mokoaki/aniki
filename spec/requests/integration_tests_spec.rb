@@ -50,49 +50,114 @@ describe "IntegrationTests", js: true do #, :type => :request do
   context 'ログイン状態' do
     before do
       visit root_path
-      user = FactoryGirl.create(:user)
-      FactoryGirl.create(:root_object)
+      user              = FactoryGirl.create(:user)
+      @root_object      = FactoryGirl.create(:root_object)
+      @trash_object     = FactoryGirl.create(:trash_object, parent_directory_id: @root_object.id)
+      @directory_object = FactoryGirl.create(:directory_object, parent_directory_id: @root_object.id)
 
       fill_in 'login_id', with: user.login_id
       fill_in 'password', with: user.password
+
       click_button 'ログイン'
     end
 
     it '新規ディレクトリ' do #, js: true do
-      #moko = find('div#new_directory_form')
-      #save_screenshot('/home/moko/file.png')
-      #puts '============'
-      #puts current_path
-      #puts find('div#files').inspect
-      #puts find('div#files').visible?
-      #puts find('div#new_directory_form').visible?
-      #puts find('div#new_directory_form', visible: true).visible?
-
       expect(find('div#new_directory_form', visible: false).visible?).to be_falsy
 
       click_button '新規ディレクトリ'
-      #puts '----------------'
-      #puts find('div#new_directory_form').inspect #.visible?
-      #moko2 = find('div#new_directory_form')
-      #puts moko2.inspect
 
-      #expect(page).not_to have_content('ディレクトリ作成')
-
-      expect(find('div#new_directory_form', visible: true).visible?).to be_truthy
+      expect(find('div#new_directory_form').visible?).to be_truthy
 
       fill_in 'name', with: '新規ディレクトリ名'
 
-      #expect(find("#not_found_id")).to raise_error(Capybara::ElementNotFound)
-
-      files_div = find('div#files')
-
-      expect(files_div).not_to have_content('新規ディレクトリ名')
+      expect(find('div#files')).not_to have_content('新規ディレクトリ名')
 
       click_button 'ディレクトリ作成'
 
-      expect(files_div).to have_content('新規ディレクトリ名')
+      expect(find('div#files')).to have_content('新規ディレクトリ名')
+    end
 
+    it 'リネームボタン' do
+      expect(find('button#rename_file_object_menu_button').disabled?).to be_truthy
+      expect(find("input#file_object_checks_#{@directory_object.id}").visible?).to be_truthy
+      expect(find("span#name_object_#{@directory_object.id}").visible?).to be_truthy
+      expect(find("span#rename_object_#{@directory_object.id}", visible: false).visible?).to be_falsy
+      expect(find("a#link_#{@directory_object.id}").text).to eq('ディレクトリ名')
 
+      check "file_object_checks_#{@directory_object.id}"
+
+      expect(find('button#rename_file_object_menu_button').disabled?).to be_falsy
+
+      click_button 'リネーム'
+
+      expect(find("span#name_object_#{@directory_object.id}", visible: false).visible?).to be_falsy
+      expect(find("span#rename_object_#{@directory_object.id}").visible?).to be_truthy
+
+      expect(find("input#rename_#{@directory_object.id}").value).to eq('ディレクトリ名')
+
+      fill_in "rename_#{@directory_object.id}", with: 'ディレクトリ名変更後'
+
+      click_button '変更'
+
+      expect(find("span#name_object_#{@directory_object.id}").visible?).to be_truthy
+      expect(find("span#rename_object_#{@directory_object.id}", visible: false).visible?).to be_falsy
+      expect(find("a#link_#{@directory_object.id}").text).to eq('ディレクトリ名変更後')
+    end
+
+    it '削除ボタン' do
+      expect(find('button#delete_file_object_menu_button').disabled?).to be_truthy
+      expect(find("input#file_object_checks_#{@directory_object.id}").visible?).to be_truthy
+
+      check "file_object_checks_#{@directory_object.id}"
+
+      expect(find('button#delete_file_object_menu_button').disabled?).to be_falsy
+
+      click_button '削除'
+
+      #poltergeistだと動かない　ていうか常にwindow.confirmにはtrueで返す
+      #page.driver.browser.switch_to.alert.accept
+
+      #scriptで要素が消えるまでにちょっと時間がかかるようなので
+      #ループして消えるのを待つ。ていうかもうちょっと良い書き方があると思う 無限ループも怖いし
+      begin
+        while find("div#line_#{@directory_object.id}")
+          sleep 0.5
+        end
+      rescue
+      end
+
+      expect { find("a#link_#{@directory_object.id}") }.to raise_error(Capybara::ElementNotFound)
+    end
+
+    it 'カットボタン' do
+      expect(find('button#cut_file_object_menu_button').disabled?).to be_truthy
+      expect(find('button#paste_file_object_menu_button').disabled?).to be_truthy
+      expect(find("input#file_object_checks_#{@directory_object.id}").visible?).to be_truthy
+
+      check "file_object_checks_#{@directory_object.id}"
+
+      expect(find('button#cut_file_object_menu_button').disabled?).to be_falsy
+      expect(find('button#paste_file_object_menu_button').disabled?).to be_truthy
+
+      click_button 'カット'
+
+      #ちょっと待たないとスクリプトが終了しないっぽ
+      sleep 0.5
+
+      expect(find('button#paste_file_object_menu_button').disabled?).to be_falsy
+
+      visit directory_path(FileObject.get_trash_object.id)
+
+      expect(find('button#paste_file_object_menu_button').disabled?).to be_falsy
+      expect { find("a#link_#{@directory_object.id}") }.to raise_error(Capybara::ElementNotFound)
+
+      click_button 'ペースト'
+
+      #ちょっと待たないとスクリプトが終了しないっぽ
+      sleep 0.5
+
+      expect(find('button#paste_file_object_menu_button').disabled?).to be_truthy
+      expect(find("a#link_#{@directory_object.id}").text).to eq('ディレクトリ名')
     end
   end
 end

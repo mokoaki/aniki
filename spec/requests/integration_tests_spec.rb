@@ -20,7 +20,7 @@ describe "IntegrationTests", js: true do #, :type => :request do
           click_button 'ログイン'
 
           expect(current_path).to eq(login_try_path)
-          expect(page).to have_content('パス違くね？')
+          expect(page).to have_content('ログイン失敗')
         end
 
         it '成功' do

@@ -1,22 +1,24 @@
-<%= form_for @user do |f| %>
-  <div>
-    <%= f.label :login_id, 'ログインID' %>
-    <%= f.text_field :login_id %>
-  </div>
+<div class="waku">
+  <%= form_for @user do |f| %>
+    <div>
+      <%= f.label :login_id, 'ログインID' %>
+      <%= f.text_field :login_id %>
+    </div>
 
-  <div>
-    <%= f.label :password, 'パスワード' %>
-    <%= f.password_field :password %>
-  </div>
+    <div>
+      <%= f.label :password, 'パスワード' %>
+      <%= f.password_field :password %>
+    </div>
 
-  <div>
-    <%= f.label :password_confirmation, 'パスワード確認' %>
-    <%= f.password_field :password_confirmation %>
-  </div>
+    <div>
+      <%= f.label :password_confirmation, 'パスワード確認' %>
+      <%= f.password_field :password_confirmation %>
+    </div>
 
-  <% if @user.new_record? %>
-    <%= f.submit('作成') %>
-  <% else %>
-    <%= f.submit('変更') %>
+    <% if @user.new_record? %>
+      <%= f.submit('作成') %>
+    <% else %>
+      <%= f.submit('変更') %>
+    <% end %>
   <% end %>
-<% end %>
+</div>

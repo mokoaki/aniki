@@ -1,6 +1,6 @@
 class User < ActiveRecord::Base
   validates :login_id, presence: true,
-                       length: { in: (6..64) },
+                       length: { in: (4..64) },
                        uniqueness: { case_sensitive: false }
 
   validates :password, length: { minimum: 6 }

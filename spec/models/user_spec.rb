@@ -8,7 +8,7 @@ describe User do
       expect(@user).to respond_to(:login_id)
       expect(@user).to respond_to(:password_digest)
       expect(@user).to respond_to(:remember_token)
-      expect(@user).to respond_to(:admin)
+      expect(@user).to respond_to(:admin?)
       expect(@user).to respond_to(:created_at)
       expect(@user).to respond_to(:updated_at)
 
@@ -40,18 +40,18 @@ describe User do
         expect(@user).to be_invalid
       end
 
-      it 'A * 5 invalid' do
-        @user.login_id = 'A' * 5
+      it 'A * 3 invalid' do
+        @user.login_id = 'A' * 3
         expect(@user).to be_invalid
       end
 
-      it 'space * 6 invalid' do
-        @user.login_id = ' ' * 6
+      it 'space * 4 invalid' do
+        @user.login_id = ' ' * 4
         expect(@user).to be_invalid
       end
 
-      it 'A * 6 valid' do
-        @user.login_id = 'A' * 6
+      it 'A * 4 valid' do
+        @user.login_id = 'A' * 4
         expect(@user).to be_valid
       end
 

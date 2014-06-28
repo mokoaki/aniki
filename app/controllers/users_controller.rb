@@ -20,40 +20,46 @@ class UsersController < ApplicationController
 
   def login_try
     user = User.find_by(login_id: params[:login_id].downcase)
+
     if user && user.authenticate(params[:password])
-      logger.debug 'ログイン成功'
+      flash[:notice] = 'ログイン成功'
       sign_in user
 
       redirect_to root_path
     else
-      logger.debug 'ログイン失敗'
-      flash.now[:error] = 'パス違くね？'
+      flash.now[:error] = 'ログイン失敗'
 
       render :login
     end
   end
 
   def edit
+    flash.now[:notice] = 'ユーザ情報更新'
     @user = current_user
   end
 
   def update
-    current_user.update_attributes(user_params)
-
-    flash[:notice] = '更新した'
+    if current_user.update_attributes(user_params)
+      flash[:notice] = '更新した'
+    else
+      flash[:error] = '失敗した'
+    end
 
     redirect_to root_path
   end
 
   def new
+    flash.now[:notice] = 'ユーザ新規作成'
     @user = User.new
     render :edit
   end
 
   def create
-    User.create(user_params)
-
-    flash[:notice] = '新規ユーザつくた'
+    if User.new(user_params).save
+      flash[:notice] = '作成した'
+    else
+      flash[:error] = '失敗した'
+    end
 
     redirect_to root_path
   end

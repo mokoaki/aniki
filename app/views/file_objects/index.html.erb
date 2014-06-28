@@ -11,7 +11,7 @@
   <%= button_tag 'ユーザ情報変更',     id: 'edit_password_menu_button',  onclick: "edit_password_menu_button_click('#{edit_user_path}')".html_safe %>
 
   <% if current_user.admin? %>
-    <%= button_tag '新規ユーザ作成',     id: 'new_user_menu_button',  onclick: "new_user_menu_button_click('#{new_user_path}')".html_safe %>
+    <%= button_tag 'ユーザ新規作成',     id: 'new_user_menu_button',  onclick: "new_user_menu_button_click('#{new_user_path}')".html_safe %>
   <% end %>
 </div>
 

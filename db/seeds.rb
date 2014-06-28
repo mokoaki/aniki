@@ -8,3 +8,5 @@
 
 FileObject.create(name: 'root', parent_directory_id: 0, object_mode: 1)
 FileObject.create(name: 'ゴミ箱', parent_directory_id: 1, object_mode: 2)
+
+User.create(login_id: 'admin', password: 'admini', password_confirmation: 'admini', admin: true)

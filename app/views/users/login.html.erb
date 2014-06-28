@@ -1,10 +1,16 @@
 ログイン
 <%= form_tag login_try_path do %>
-  <%= label_tag :login_id, 'ログインID' %>
-  <%= text_field_tag :login_id %>
+  <div>
+    <%= label_tag :login_id, 'ログインID' %>
+    <%= text_field_tag :login_id %>
+  </div>
 
-  <%= label_tag :password, 'パスワード' %>
-  <%= password_field_tag :password %>
+  <div>
+    <%= label_tag :password, 'パスワード' %>
+    <%= password_field_tag :password %>
+  </div>
 
-  <%= submit_tag('ログイン') %>
+  <div>
+    <%= submit_tag('ログイン') %>
+  </div>
 <% end %>

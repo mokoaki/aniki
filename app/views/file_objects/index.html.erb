@@ -8,7 +8,11 @@
   <%= button_tag '削除',             id: 'delete_file_object_menu_button', onclick: 'delete_file_object_menu_button_click()', disabled: true %>
   <%= button_tag 'カット',           id: 'cut_file_object_menu_button',    onclick: 'cut_file_object_menu_button_click()',    disabled: true %>
   <%= button_tag 'ペースト',         id: 'paste_file_object_menu_button',  onclick: 'paste_file_object_menu_button_click()',  disabled: session[:file_object_checkeds].nil? %>
-  <%= button_tag 'パスワード変更' %>
+  <%= button_tag 'ユーザ情報変更',     id: 'edit_password_menu_button',  onclick: "edit_password_menu_button_click('#{edit_user_path}')".html_safe %>
+
+  <% if current_user.admin? %>
+    <%= button_tag '新規ユーザ作成',     id: 'new_user_menu_button',  onclick: "new_user_menu_button_click('#{new_user_path}')".html_safe %>
+  <% end %>
 </div>
 
 <div id="upload" class="waku">

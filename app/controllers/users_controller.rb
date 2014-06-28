@@ -38,20 +38,23 @@ class UsersController < ApplicationController
   end
 
   def update
-    user = current_user
-    user.update_attributes(user_params)
+    current_user.update_attributes(user_params)
 
-    flash[:notice] = 'おｋ'
-    redirect_to edit_user_path
+    flash[:notice] = '更新した'
+
+    redirect_to root_path
   end
 
   def new
     @user = User.new
+    render :edit
   end
 
   def create
     User.create(user_params)
-    flash[:notice] = 'おｋ'
+
+    flash[:notice] = '新規ユーザつくた'
+
     redirect_to root_path
   end
 

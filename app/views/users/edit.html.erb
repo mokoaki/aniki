@@ -1,5 +1,22 @@
-<%= form_for user_update_path do |f| %>
-  <%= render :partial => 'user_form', :locals => { f: f } %>
+<%= form_for @user do |f| %>
+  <div>
+    <%= f.label :login_id, 'ログインID' %>
+    <%= f.text_field :login_id %>
+  </div>
 
-  <%= f.submit('変更') %>
+  <div>
+    <%= f.label :password, 'パスワード' %>
+    <%= f.password_field :password %>
+  </div>
+
+  <div>
+    <%= f.label :password_confirmation, 'パスワード確認' %>
+    <%= f.password_field :password_confirmation %>
+  </div>
+
+  <% if @user.new_record? %>
+    <%= f.submit('作成') %>
+  <% else %>
+    <%= f.submit('変更') %>
+  <% end %>
 <% end %>

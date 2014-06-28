@@ -128,3 +128,9 @@ get_file_object_checkeds = ->
     success: (response) ->
       paste_file_object_menu_button.prop('disabled', true)
       new_directory_form.after(response)
+
+@edit_password_menu_button_click = (url) ->
+  window.location = url
+
+@new_user_menu_button_click = (url) ->
+  window.location = url

@@ -5,6 +5,8 @@ describe FileObject do
   let(:data_path) { Rails.application.secrets.data_path }
 
   context 'methods' do
+    before { @file_object.parent_directory_id = 1 }
+
     it 'columns' do
       expect(@file_object).to respond_to(:name)
       expect(@file_object).to respond_to(:parent_directory_id)
@@ -47,6 +49,8 @@ describe FileObject do
   end
 
   describe 'validation' do
+    before { @file_object.parent_directory_id = 1 }
+
     context 'name' do
       it 'nil invalid' do
         @file_object.name = nil
@@ -127,7 +131,7 @@ describe FileObject do
       end
 
       it 'parent_directory_id:1 and object_mode:1 invalid' do
-        @file_object.parent_directory_id = 0
+        @file_object.parent_directory_id = 1
         @file_object.object_mode = 1
         expect(@file_object).to be_invalid
       end
@@ -161,6 +165,7 @@ describe FileObject do
 
       it '1 valid' do
         @file_object.object_mode = 1
+        @file_object.parent_directory_id = 0
         expect(@file_object).to be_valid
       end
 
@@ -213,7 +218,7 @@ describe FileObject do
       end
 
       it 'delete directory' do
-        directory_object = FactoryGirl.create(:directory_object)
+        directory_object = FactoryGirl.create(:directory_object, parent_directory_id: 1)
 
         file_object1 = FactoryGirl.build(:file_object)
         file_object1.parent_directory_id = directory_object.id
@@ -244,6 +249,7 @@ describe FileObject do
     end
 
     it 'before_save' do
+      @file_object.parent_directory_id = 1
       @file_object.name = "\n\t\\\"<a>'*:;b?|/"
       @file_object.save
       expect(@file_object.name).to eq('”＜a＞’＊：；b？｜／')
@@ -253,7 +259,7 @@ describe FileObject do
   describe 'class methods' do
     context 'get_directory_by_id' do
       it 'if directory' do
-        directory_object = FactoryGirl.create(:directory_object)
+        directory_object = FactoryGirl.create(:directory_object, parent_directory_id: 1)
         expect(FileObject.get_directory_by_id(directory_object.id)).to eq(directory_object)
       end
 
@@ -374,6 +380,8 @@ describe FileObject do
     end
 
     it 'created_at_h' do
+      root_object = FactoryGirl.create(:root_object)
+      @file_object.parent_directory_id = root_object.id
       @file_object.save
       expect(@file_object.created_at_h).to eq(@file_object.created_at.strftime("%Y/%m/%d %T"))
     end
@@ -395,7 +403,7 @@ describe FileObject do
       it 'trash' do
         root_object = FactoryGirl.create(:root_object)
         trash_object = FactoryGirl.create(:trash_object, parent_directory_id: root_object.id)
-        trash_file_object = FactoryGirl.create(:trash_file_object, parent_directory_id: trash_object.id)
+        trash_file_object = FactoryGirl.create(:file_object, parent_directory_id: trash_object.id)
 
         expect(trash_file_object.get_parent_directories_list).to eq( [{ name: trash_file_object.name, id: trash_file_object.id }, { name: trash_object.name, id: trash_object.id }, { name: root_object.name, id: root_object.id }] )
       end
@@ -403,8 +411,9 @@ describe FileObject do
 
     context 'ancestor_trash?' do
       it 'ゴミ箱内ならtrue' do
-        trash_object = FactoryGirl.create(:trash_object)
-        trash_file_object = FactoryGirl.build(:trash_file_object, parent_directory_id: trash_object.id)
+        root_object  = FactoryGirl.create(:root_object)
+        trash_object = FactoryGirl.create(:trash_object, parent_directory_id: root_object.id)
+        trash_file_object = FactoryGirl.build(:file_object, parent_directory_id: trash_object.id)
 
         expect(trash_file_object.ancestor_trash?).to be_truthy
       end
@@ -429,8 +438,9 @@ describe FileObject do
       end
 
       it 'ゴミ箱内なら 削除される' do
-        trash_object      = FactoryGirl.create(:trash_object)
-        trash_file_object = FactoryGirl.create(:trash_file_object, parent_directory_id: trash_object.id)
+        root_object       = FactoryGirl.create(:root_object)
+        trash_object      = FactoryGirl.create(:trash_object, parent_directory_id: root_object.id)
+        trash_file_object = FactoryGirl.create(:file_object, parent_directory_id: trash_object.id)
         trash_file_object.go_to_bed
 
         expect(trash_file_object.destroyed?).to be_truthy
@@ -438,7 +448,7 @@ describe FileObject do
 
       it 'root配下ならparent_directory_idがゴミ箱.idに変わる' do
         root_object = FactoryGirl.create(:root_object)
-        trash_object = FactoryGirl.create(:trash_object)
+        trash_object = FactoryGirl.create(:trash_object, parent_directory_id: root_object.id)
         @file_object.parent_directory_id = root_object.id
         @file_object.go_to_bed
 
@@ -454,7 +464,8 @@ describe FileObject do
     end
 
     it 'go_to_trash' do
-      trash_object = FactoryGirl.create(:trash_object)
+      root_object = FactoryGirl.create(:root_object)
+      trash_object = FactoryGirl.create(:trash_object, parent_directory_id: root_object.id)
       @file_object.send(:go_to_trash)
 
       expect(@file_object.parent_directory_id).to eq(trash_object.id)

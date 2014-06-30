@@ -41,11 +41,13 @@ class UsersController < ApplicationController
   def update
     if current_user.update_attributes(user_params)
       flash[:notice] = '更新した'
+      redirect_to root_path
     else
+      @user = User.find_by(id: params[:id])
+      @user.login_id = user_params[:login_id]
       flash[:error] = '失敗した'
+      render :edit
     end
-
-    redirect_to root_path
   end
 
   def new
@@ -57,11 +59,13 @@ class UsersController < ApplicationController
   def create
     if User.new(user_params).save
       flash[:notice] = '作成した'
+      redirect_to root_path
     else
+      @user = User.new(user_params)
       flash[:error] = '失敗した'
+      render :edit
     end
 
-    redirect_to root_path
   end
 
   private

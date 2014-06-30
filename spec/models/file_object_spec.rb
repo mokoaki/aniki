@@ -121,9 +121,15 @@ describe FileObject do
         expect(@file_object).to be_valid
       end
 
-      it '1 valid' do
+      it 'parent_directory_id:1 and object_mode:4 valid' do
         @file_object.parent_directory_id = 1
         expect(@file_object).to be_valid
+      end
+
+      it 'parent_directory_id:1 and object_mode:1 invalid' do
+        @file_object.parent_directory_id = 0
+        @file_object.object_mode = 1
+        expect(@file_object).to be_invalid
       end
     end
 

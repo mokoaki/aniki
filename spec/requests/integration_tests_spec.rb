@@ -143,6 +143,9 @@ describe "IntegrationTests", js: true do #, :type => :request do
 
       #ちょっと待たないとスクリプトが終了しないっぽ
       sleep 0.5
+      
+      puts 'テスト'
+      puts session[:file_object_checkeds]
 
       expect(find('button#paste_file_object_menu_button').disabled?).to be_falsy
 

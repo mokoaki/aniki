@@ -17,25 +17,25 @@ FactoryGirl.define do
 
   factory :trash_object, class: FileObject do
     name 'ゴミ箱'
-    parent_directory_id 1
+    #parent_directory_id 1
     object_mode 2
   end
 
   factory :directory_object, class: FileObject do
     name 'ディレクトリ名'
-    parent_directory_id 1
+    #parent_directory_id 1
     object_mode 3
   end
 
   factory :file_object do
     name 'file_object'
-    parent_directory_id 1
+    #parent_directory_id 1
     object_mode 4
   end
 
   factory :trash_file_object, class: FileObject do
     name 'trash_file_object'
-    parent_directory_id 1
+    #parent_directory_id 1
     object_mode 4
   end
 

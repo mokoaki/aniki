@@ -5,7 +5,11 @@ class FileObject < ActiveRecord::Base
 
   validate do
     if !is_root? && parent_directory_id == 0
-      errors.add(:parent_directory_id, 'use 0 only root directory')
+      errors.add(:parent_directory_id, 'Can use the "parent_directory_id: 0" only root-directory')
+    end
+
+    if is_root? && parent_directory_id != 0
+      errors.add(:parent_directory_id, 'Can use the root-directory only "parent_directory_id: 0"')
     end
   end
 

@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
+ruby '2.1.5'
 
-gem 'rails', '4.1.2'
+gem 'rails', '4.1.8'
 gem 'mysql2'
 gem 'sass-rails'
 gem 'uglifier'
@@ -8,6 +9,9 @@ gem 'coffee-rails'
 gem 'therubyracer',  platforms: :ruby
 gem 'jquery-rails'
 gem 'turbolinks'
+
+gem 'bcrypt'
+
 #gem 'jbuilder', '~> 2.0'
 #gem 'sdoc', '~> 0.4.0',          group: :doc
 
@@ -16,15 +20,11 @@ group :production do
 end
 
 group :development do
-  gem "better_errors"
-  gem "binding_of_caller"
   gem 'whenever', :require => false
   gem 'rspec-rails'
   gem "spring"
   gem 'spring-commands-rspec'
   gem 'pry-rails'
-  gem 'guard-rspec'
-  gem 'guard-spring'
 end
 
 group :test do
@@ -40,5 +40,3 @@ group :test do
   ###gem 'headless'
   ###http://d.hatena.ne.jp/sandmark/20120324/1332590065
 end
-
-gem 'bcrypt'

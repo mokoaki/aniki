@@ -1,0 +1,32 @@
+<div class="table">
+  <div class="cell">
+    <%= check_box_tag('all_check_box', true, false, {name: nil}) %>
+  </div>
+</div>
+
+<% @current_files_list.each_with_index do |file_object, index| %>
+  <div class="table" id="<%= file_object[:id_hash] %>">
+    <div class="cell">
+      <%= get_check_box(file_object, index) %>
+      <%= get_icon_image(file_object) %>
+
+      <% if file_object.is_file? %>
+        <span class="object_file" data-file-object-id-hash="<%= file_object[:id_hash] %>"><%= file_object[:name] %></span>
+      <% else %>
+        <span class="object_directory" data-file-object-id-hash="<%= file_object[:id_hash] %>"><%= file_object[:name] %></span>
+      <% end %>
+    </div>
+
+    <div class="cell right">
+      <% if file_object.is_file? %>
+        <%= number_to_human_size(file_object.size) %> -
+      <% end %>
+
+      <%= file_object.updated_at_h %>
+    </div>
+  </div>
+<% end %>
+
+<% if @current_files_list.empty? %>
+  ( ｰ`дｰ´) なんもないお
+<% end %>

@@ -10,12 +10,14 @@ class CreateFileObjects < ActiveRecord::Migration
       #4 :ファイル
       t.integer :object_mode
 
-      t.string  :hash_name, limit: 64
+      t.string  :id_hash,   limit: 40
+      t.string  :file_hash, limit: 40
       t.integer :size
 
-      t.datetime  :created_at
+      t.timestamps
     end
 
+    add_index :file_objects, :id_hash
     add_index :file_objects, :parent_directory_id
     add_index :file_objects, :object_mode
   end

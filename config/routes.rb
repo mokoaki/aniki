@@ -1,19 +1,15 @@
 Rails.application.routes.draw do
-  root 'users#index'
+  root 'file_objects#index'
+
+  post 'parent_directories_list' => 'file_objects#parent_directories_list'
+  post 'current_files_list'      => 'file_objects#current_files_list'
+
+  post 'proc' => 'file_objects#proc',  as: :proc
+  get  'f/:id_hash'       => 'file_objects#download'
 
   get  'login'       => 'users#login'
   post 'login_try'   => 'users#login_try'
-  get  'logout'      => 'users#logout'
 
-  resources :users, :only => [:edit, :update, :new, :create]
-
-  get  'd/:id'       => 'file_objects#index',     as: :directory
-  post 'create'      => 'file_objects#create'
-  post 'destroy'     => 'file_objects#destroy'
-  post 'cut'         => 'file_objects#cut'
-  post 'paste'       => 'file_objects#paste'
-  post 'rename'      => 'file_objects#rename'
-
-  get  'f/:id'       => 'file_objects#download',  as: :file
-  post 'upload'      => 'file_objects#upload',    as: :upload
+  resources :users, :only => [:update, :new, :create]
+  get 'users' => 'users#edit',  as: :user_edit
 end

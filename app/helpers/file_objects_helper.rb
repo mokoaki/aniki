@@ -10,8 +10,28 @@ module FileObjectsHelper
     end
   end
 
-  def get_check_box(file_object)
-    #ゴミ箱はチェックさせない
-    check_box_tag("file_object_checks_#{file_object.id}", file_object.id, false, 'data-check_id_digest' => FileObject.get_digest(file_object.id), disabled: file_object.is_trash?, class: :file_object_checks, onchange: 'file_object_checkeds_check()')
+  def get_check_box(file_object, index)
+    if file_object.is_trash?
+      check_box_tag(nil, nil, false, {class: :no_check, disabled: true})
+    else
+      check_box_tag("checkbox_#{index + 1}", file_object[:id_hash], false, {class: :object_check})
+    end
   end
+  #
+  # def size_h(size)
+  #   size = size.to_f
+  #
+  #   moko = case true
+  #   when size < 1.kilobyte
+  #     [size, 'B']
+  #   when size < 1.megabyte
+  #     [size / 1.kilobyte, 'KB']
+  #   when size < 1.gigabyte
+  #     [size / 1.megabyte, 'MB']
+  #   else
+  #     [size / 1.gigabyte, 'GB']
+  #   end
+  #
+  #   "#{moko[0].round(2)} #{moko[1]}"
+  # end
 end

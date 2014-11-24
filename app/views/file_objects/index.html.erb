@@ -1,38 +1,43 @@
-<div id="parent_directories_list" class='waku'>
-  <%= render :partial => 'parent_directories_list', :locals => { parent_directories_list: @parent_directories_list } %>
-</div>
+<div id="parent_directories_list" class='waku'></div>
 
 <div id="menu" class='waku'>
-  <%= button_tag '新規ディレクトリ', id: 'new_directory_menu_button',       onclick: 'new_directory_menu_button_click()' %>
-  <%= button_tag 'リネーム',         id: 'rename_file_object_menu_button', onclick: 'rename_file_object_menu_button_click()', disabled: true %>
-  <%= button_tag '削除',             id: 'delete_file_object_menu_button', onclick: 'delete_file_object_menu_button_click()', disabled: true %>
-  <%= button_tag 'カット',           id: 'cut_file_object_menu_button',    onclick: 'cut_file_object_menu_button_click()',    disabled: true %>
-  <%= button_tag 'ペースト',         id: 'paste_file_object_menu_button',  onclick: 'paste_file_object_menu_button_click()',  disabled: session[:file_object_checkeds].nil? %>
-  <%= button_tag 'ユーザ情報変更',     id: 'edit_password_menu_button',  onclick: "edit_password_menu_button_click('#{edit_user_path}')".html_safe %>
+  <%= button_tag 'うｐ', id: 'menu_upload_file_button' %>
+  <%= button_tag 'ディレクトリ作成', id: 'menu_new_directory_button' %>
+  <%= button_tag 'リネーム', id: 'menu_rename_file_object_button', disabled: true %>
+  <%= button_tag 'カット', id: 'menu_cut_file_object_button', disabled: true %>
+  <%= button_tag 'ペースト', id: 'menu_paste_file_object_button', disabled: true %>
+  <%= button_tag '削除', id: 'menu_delete_file_object_button', disabled: true %>
+  <%= button_tag 'ユーザ情報変更', id: 'menu_edit_user_data_button' %>
 
   <% if current_user.admin? %>
-    <%= button_tag 'ユーザ新規作成',     id: 'new_user_menu_button',  onclick: "new_user_menu_button_click('#{new_user_path}')".html_safe %>
+    <%= button_tag 'ユーザ新規作成', id: 'menu_new_user_data_button' %>
+  <% end %>
+
+  <%= image_tag('spinner.gif', {id: 'spinner'}) %>
+</div>
+
+<div id="proc_div" class="waku">
+  <%= form_tag proc_path, {id: :proc_form, multipart: true } do %>
+    <%= hidden_field_tag :proc_mode, '' %>
+    <%= hidden_field_tag :current_directory_id_hash %>
+
+    <div id="upload_file_form" %>
+      <%= file_field_tag 'upload_files[]', {id: 'upload_files', multiple: true} %>
+    </div>
+
+    <div id="new_directory_form" %>
+      <%= text_field_tag 'new_directory_name', '', {placeholder: '新規ディレクトリ名'} %>
+    </div>
+
+    <div id="rename_object_form" %>
+      <%= text_field_tag 'rename_object_name' %>
+      <%= hidden_field_tag 'rename_object_id_hash' %>
+    </div>
+
+    <%= hidden_field_tag 'checked_object_id_hashes' %>
+
+    <%= button_tag('', {type:'button', id: 'proc_button'}) %>
   <% end %>
 </div>
 
-<div id="upload" class="waku">
-  <%= form_tag upload_path, {id: :file_upload_form, multipart: true } do %>
-    <%= file_field_tag 'upload_files[]', {required: true, multiple: true} %>
-    <%= hidden_field_tag :current_directory_id,        @current_directory_id %>
-    <%= hidden_field_tag :current_directory_id_digest, @current_directory_id_digest %>
-    <%= submit_tag('うｐ') %>
-  <% end %>
-</div>
-
-<div id="files" class='waku'>
-  <%= '(´・ω・｀)何もないお' if @file_objects.size == 0 %>
-
-  <div id="new_directory_form">
-    <%= check_box_tag('', '', false, disabled: true) %>
-    <%= image_tag('icon_folder_alt.png') %>
-    <%= text_field_tag :name, '', onkeypress: 'new_directory_form_name_keypress()' %>
-    <%= button_tag 'ディレクトリ作成', onclick: "create_new_directory_click()" %>
-  </div>
-
-  <%= render @file_objects %>
-</div>
+<div id="current_files_list" class='waku'></div>

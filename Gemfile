@@ -8,19 +8,14 @@ gem 'uglifier'
 gem 'coffee-rails'
 gem 'therubyracer',  platforms: :ruby
 gem 'jquery-rails'
-gem 'turbolinks'
-
+gem 'jquery-form-rails'
 gem 'bcrypt'
-
-#gem 'jbuilder', '~> 2.0'
-#gem 'sdoc', '~> 0.4.0',          group: :doc
 
 group :production do
   gem 'unicorn'
 end
 
 group :development do
-  gem 'whenever', :require => false
   gem 'rspec-rails'
   gem "spring"
   gem 'spring-commands-rspec'

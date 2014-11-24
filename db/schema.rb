@@ -17,11 +17,14 @@ ActiveRecord::Schema.define(version: 20140614042712) do
     t.string   "name"
     t.integer  "parent_directory_id"
     t.integer  "object_mode"
-    t.string   "hash_name",           limit: 64
+    t.string   "id_hash",             limit: 40
+    t.string   "file_hash",           limit: 40
     t.integer  "size"
     t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
+  add_index "file_objects", ["id_hash"], name: "index_file_objects_on_id_hash", using: :btree
   add_index "file_objects", ["object_mode"], name: "index_file_objects_on_object_mode", using: :btree
   add_index "file_objects", ["parent_directory_id"], name: "index_file_objects_on_parent_directory_id", using: :btree
 

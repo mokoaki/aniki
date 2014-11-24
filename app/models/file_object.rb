@@ -1,6 +1,7 @@
 class FileObject < ActiveRecord::Base
-  validates :name, presence: true, length: { in: (1..255) }
+  validates :name,                 presence: true, length: { in: (1..255) }
   validates :parent_directory_id,  presence: true
+  validates :id_hash,              presence: true
   validates :object_mode,          inclusion: [1, 2, 3, 4]
 
   validate do
@@ -19,9 +20,12 @@ class FileObject < ActiveRecord::Base
   default_scope -> { order(:object_mode, :name) }
 
   before_destroy do
-    if is_file?
-      FileUtils.rm(file_fullpath) rescue true
-      FileUtils.rmdir(file_save_path) rescue true
+    if is_root? || is_trash?
+      false
+    else
+      if is_file? && FileObject.where(file_hash: file_hash).count == 1
+        FileUtils.rm(file_fullpath)
+      end
     end
   end
 
@@ -47,52 +51,75 @@ class FileObject < ActiveRecord::Base
   end
 
   class << self
-    def get_directory_by_id(directory_id)
-      find_by(id: directory_id, object_mode: [1, 2, 3])
+    def get_directory_object_by_id_hash(id_hash)
+      find_by(id_hash: id_hash, object_mode: [1, 2, 3])
     end
 
-    def get_root_object
-      FileObject.find_by(object_mode: 1)
+    def get_file_or_directory_object_by_id_hash(id_hash)
+      find_by(id_hash: id_hash, object_mode: [3, 4])
+    end
+
+    def get_file_or_directory_object_by_id_hashes(id_hashes)
+      where(id_hash: id_hashes, object_mode: [3, 4])
     end
 
     def get_trash_object
-      FileObject.find_by(object_mode: 2)
-    end
-
-    def get_digest(id)
-      Digest::SHA2.hexdigest(Rails.application.secrets.salt + id.to_i.to_s)
-    end
-
-    def check_digest(id, digest)
-      digest == get_digest(id) ? id : nil
-    end
-
-    def check_digests(data)
-      result = []
-
-      data.each_value do |value|
-        if check_digest(value['id'], value['id_digest'])
-          result << value['id']
-        end
-      end
-
-      result.uniq
+      find_by(object_mode: 2)
     end
   end
 
-  def file_save(upload_file, test_hash = nil)
-    self.name                = test_hash ? 'test' : upload_file.original_filename
-    self.object_mode         = 4
-    self.hash_name           = test_hash || SecureRandom.hex(32)
-    self.size                = test_hash ? 0 : upload_file.size
+  def file_upload(upload_file)
+    file_data = upload_file.read
 
-    FileUtils.mkdir_p file_save_path
+    new_file_object               = children.new
+    new_file_object[:name]        = upload_file.original_filename
+    new_file_object[:object_mode] = 4
+    new_file_object[:id_hash]     = Digest::SHA1.hexdigest("#{Time.now}#{new_file_object[:name]}")
+    new_file_object[:file_hash]   = Digest::SHA1.hexdigest(file_data)
+    new_file_object[:size]        = upload_file.size
 
-    File.open(file_fullpath, 'wb') do |fo|
-      fo.write(test_hash ? '' : upload_file.read)
+    FileUtils.mkdir_p new_file_object.file_save_path
+
+    File.open(new_file_object.file_fullpath, 'wb') do |fo|
+      fo.write(file_data)
     end
 
-    save
+    new_file_object.save
+
+    touch
+  end
+
+  def directory_make(new_directory_name)
+    new_directory_object               = children.new
+    new_directory_object[:name]        = new_directory_name
+    new_directory_object[:object_mode] = 3
+    new_directory_object[:id_hash]     = Digest::SHA1.hexdigest("#{Time.now}#{new_directory_name}")
+    new_directory_object.save
+
+    touch
+  end
+
+  def object_rename(rename_object_name)
+    update_attributes(name: rename_object_name)
+    parent_directory.touch
+  end
+
+  def object_paste(current_directory_id_hash)
+    current_directory_object  = FileObject.get_directory_object_by_id_hash(current_directory_id_hash)
+
+    update_attributes(parent_directory_id: current_directory_object[:id])
+    current_directory_object.touch
+  end
+
+  def object_delete
+    return if is_root? || is_trash?
+
+    if is_trash_ancestor?
+      destroy
+    else
+      trash_object = FileObject.get_trash_object
+      update_attributes(parent_directory_id: trash_object[:id])
+    end
   end
 
   def is_root?
@@ -111,44 +138,26 @@ class FileObject < ActiveRecord::Base
     object_mode == 4
   end
 
-  def created_at_h
-    created_at.strftime("%Y/%m/%d %T")
+  def updated_at_h
+    updated_at.strftime("%Y/%m/%d %T")
   end
 
   def file_fullpath
-    file_save_path + hash_name
+    File.join(file_save_path, file_hash)
   end
 
   def get_parent_directories_list
-    [{ id: id, name: name }] + (is_root? ? [] : parent_directory.get_parent_directories_list)
+    (is_root? ? [] : parent_directory.get_parent_directories_list) + [{ id_hash: id_hash, name: name }]
   end
 
-  #遡るとゴミ箱？
-  def ancestor_trash?
+  def file_save_path
+    File.join(Rails.application.secrets.data_path, file_hash[0, 2])
+  end
+
+  def is_trash_ancestor?
     return false if is_root?
     return true  if is_trash?
 
-    parent_directory.ancestor_trash?
-  end
-
-  def go_to_bed
-    if is_root? || is_trash?
-      return false
-    elsif ancestor_trash?
-      destroy
-    else
-      go_to_trash
-    end
-  end
-
-  private
-
-  def file_save_path
-    Rails.application.secrets.data_path + hash_name[0, 2] + '/'
-  end
-
-  def go_to_trash
-    self.parent_directory_id = FileObject.get_trash_object.id
-    save
+    parent_directory.is_trash_ancestor?
   end
 end

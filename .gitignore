@@ -18,3 +18,5 @@
 file_data/
 config/database.yml
 config/secrets.yml
+
+.vagrant/

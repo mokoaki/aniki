@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+
 ruby '2.2.0'
 
 gem 'rails', '4.2.0'
@@ -8,12 +9,11 @@ gem 'uglifier'
 gem 'coffee-rails', '~> 4.1.0'
 gem 'therubyracer', platforms: :ruby
 gem 'jquery-rails'
-gem 'jquery-form-rails'
 gem 'bcrypt'
 
-group :production do
-  gem 'unicorn'
-end
+# group :production do
+#   gem 'unicorn'
+# end
 
 group :development do
   gem 'rspec-rails'

@@ -1,5 +1,0 @@
-<% @parent_directories_list.each_with_index do |file_object, index| %>
-  <div style="margin-left:<%= index * 20 %>px;">
-    <span class="object_directory" data-file-object-id-hash="<%= file_object[:id_hash] %>"><%= '└' if index > 0 %><%= file_object[:name] %></span>
-  </div>
-<% end %>

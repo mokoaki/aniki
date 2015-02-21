@@ -1,14 +1,15 @@
 require 'rails_helper'
 
 describe FileObject do
-  let(:file_object) { FactoryGirl.build(:file_object) }
-  let(:data_path)   { Rails.application.secrets.data_path }
-  let(:id_hash)     { SecureRandom.hex[0, 40] }
+  let(:root_object)      { FactoryGirl.build(:root_object) }
+  let(:trash_object)     { FactoryGirl.build(:trash_object) }
+  let(:directory_object) { FactoryGirl.build(:directory_object) }
+  let(:file_object)      { FactoryGirl.build(:file_object) }
 
   context 'check methods' do
     it 'columns' do
       expect(file_object).to respond_to(:name)
-      expect(file_object).to respond_to(:parent_directory_id)
+      expect(file_object).to respond_to(:parent_directory_id_hash)
       expect(file_object).to respond_to(:object_mode)
       expect(file_object).to respond_to(:id_hash)
       expect(file_object).to respond_to(:file_hash)
@@ -18,17 +19,17 @@ describe FileObject do
     end
 
     it 'class methods' do
+      expect(FileObject).to respond_to(:get_trash_object)
+      expect(FileObject).to respond_to(:get_children_by_id_hash)
       expect(FileObject).to respond_to(:get_directory_object_by_id_hash)
       expect(FileObject).to respond_to(:get_file_or_directory_object_by_id_hash)
-      expect(FileObject).to respond_to(:get_file_or_directory_object_by_id_hashes)
-      expect(FileObject).to respond_to(:get_trash_object)
+      expect(FileObject).to respond_to(:get_file_object_by_id_hash)
+      expect(FileObject).to respond_to(:create_directory)
+      expect(FileObject).to respond_to(:upload_file)
+      expect(FileObject).to respond_to(:get_random_sha1)
     end
 
     it 'instance methods' do
-      expect(file_object).to respond_to(:file_upload)
-      expect(file_object).to respond_to(:directory_make)
-      expect(file_object).to respond_to(:object_rename)
-      expect(file_object).to respond_to(:object_paste)
       expect(file_object).to respond_to(:object_delete)
       expect(file_object).to respond_to(:is_root?)
       expect(file_object).to respond_to(:is_trash?)
@@ -39,6 +40,7 @@ describe FileObject do
       expect(file_object).to respond_to(:get_parent_directories_list)
       expect(file_object).to respond_to(:file_save_path)
       expect(file_object).to respond_to(:is_trash_ancestor?)
+      expect(file_object).to respond_to(:is_mine_ancestor?)
     end
 
     it 'relations' do
@@ -48,6 +50,17 @@ describe FileObject do
   end
 
   describe 'validation' do
+    before(:each) do
+      root_object.save
+    end
+
+    it 'default valid' do
+      expect(root_object).to be_valid
+      expect(trash_object).to be_valid
+      expect(directory_object).to be_valid
+      expect(file_object).to be_valid
+    end
+
     context 'name' do
       it 'nil invalid' do
         file_object[:name] = nil
@@ -90,49 +103,45 @@ describe FileObject do
       end
     end
 
-    context 'parent_directory_id' do
+    context 'parent_directory_id_hash' do
       it 'nil invalid' do
-        file_object[:parent_directory_id] = nil
+        file_object[:parent_directory_id_hash] = nil
         expect(file_object).to be_invalid
       end
 
       it 'null_character invalid' do
-        file_object[:parent_directory_id] = ''
+        file_object[:parent_directory_id_hash] = ''
         expect(file_object).to be_invalid
       end
 
       it 'space invalid' do
-        file_object[:parent_directory_id] = ' '
+        file_object[:parent_directory_id_hash] = ' '
         expect(file_object).to be_invalid
       end
 
       it 'A invalid' do
-        file_object[:parent_directory_id] = 'A'
+        file_object[:parent_directory_id_hash] = 'A'
         expect(file_object).to be_invalid
       end
 
-      it 'parent_directory_id:0 and object_mode:4 invalid' do
-        file_object[:parent_directory_id] = 0
-        file_object[:object_mode] = 4
+      it 'file_object parent_directory_id_hash: "" invalid' do
+        file_object[:parent_directory_id_hash] = ''
         expect(file_object).to be_invalid
       end
 
-      it 'parent_directory_id:0 and object_mode:1 valid' do
-        file_object[:parent_directory_id] = 0
-        file_object[:object_mode] = 1
+      it 'root_object parent_directory_id_hash: "" valid' do
+        root_object[:parent_directory_id_hash] = ''
+        expect(root_object).to be_valid
+      end
+
+      it 'file_object parent_directory_id_hash: "root" valid' do
+        file_object[:parent_directory_id_hash] = 'root'
         expect(file_object).to be_valid
       end
 
-      it 'parent_directory_id:1 and object_mode:4 valid' do
-        file_object[:parent_directory_id] = 1
-        file_object[:object_mode] = 4
-        expect(file_object).to be_valid
-      end
-
-      it 'parent_directory_id:1 and object_mode:1 invalid' do
-        file_object[:parent_directory_id] = 1
-        file_object[:object_mode] = 1
-        expect(file_object).to be_invalid
+      it 'root_object parent_directory_id_hash: "root" invalid' do
+        root_object[:parent_directory_id_hash] = 'root'
+        expect(root_object).to be_invalid
       end
     end
 
@@ -162,18 +171,6 @@ describe FileObject do
         expect(file_object).to be_invalid
       end
 
-      it 'object_mode == 1 and parent_directory_id == 0 valid' do
-        file_object[:object_mode] = 1
-        file_object[:parent_directory_id] = 0
-        expect(file_object).to be_valid
-      end
-
-      it 'object_mode == 1 and parent_directory_id != 0 invalid' do
-        file_object[:object_mode] = 1
-        file_object[:parent_directory_id] = 1
-        expect(file_object).to be_invalid
-      end
-
       it '4 valid' do
         file_object[:object_mode] = 4
         expect(file_object).to be_valid
@@ -187,62 +184,50 @@ describe FileObject do
   end
 
   describe 'relations' do
-    before(:each) do
-      file_object[:parent_directory_id] = root_object[:id]
-      file_object.save
-    end
-
-    let(:root_object) { FactoryGirl.create(:root_object) }
-
     describe 'parent_directory' do
+      before(:each) do
+        root_object.save
+      end
+
       it 'return root object' do
         expect(file_object.parent_directory).to eq(root_object)
       end
     end
 
     describe 'children' do
+      before(:each) do
+        root_object.save
+        file_object.save
+      end
+
       it 'return file object' do
         expect(root_object.children).to eq([file_object])
       end
     end
   end
 
-  it 'default_scope' do
-    expect(FileObject.all.to_sql).to eq(FileObject.unscoped.order(:object_mode, :name).to_sql)
-  end
-
   describe 'event' do
     describe 'before_destroy' do
       context 'root object' do
-        before(:each) do
-          root_object.destroy
-        end
-
-        let(:root_object) { FactoryGirl.build(:root_object) }
-
         it 'fail destroy' do
+          root_object.destroy
           expect(root_object.destroyed?).to be_falsy
         end
       end
 
       context 'trash object' do
-        before(:each) do
-          trash_object.destroy
-        end
-
-        let(:trash_object) { FactoryGirl.build(:trash_object) }
-
         it 'fail destroy' do
+          trash_object.save
+          trash_object.destroy
           expect(trash_object.destroyed?).to be_falsy
         end
       end
 
       context 'directory object' do
         before(:each) do
+          directory_object.save
           directory_object.destroy
         end
-
-        let(:directory_object) { FactoryGirl.build(:directory_object) }
 
         it 'sucess destroy' do
           expect(directory_object.destroyed?).to be_truthy
@@ -250,24 +235,25 @@ describe FileObject do
       end
 
       context 'file object' do
-        context 'There are a plurality of FileObject that refer to the same file' do
+        context 'Not rm' do
           before(:each) do
-            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
-            file_object1.destroy
+            root_object.save
+            file_object.save
+            file_object2 = FactoryGirl.create(:file_object)
+            expect(FileUtils).not_to receive(:rm).with(file_object.file_fullpath)
+            file_object.destroy
           end
 
-          let(:file_object1) { FactoryGirl.create(:file_object) }
-          let!(:file_object2) { FactoryGirl.create(:file_object) }
-
           it 'sucess destroy' do
-            expect(file_object1.destroyed?).to be_truthy
+            expect(file_object.destroyed?).to be_truthy
           end
         end
 
         context 'There is only one FileObject you are referring to the same file' do
           before(:each) do
-            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
+            root_object.save
             file_object.save
+            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
             file_object.destroy
           end
 
@@ -280,6 +266,7 @@ describe FileObject do
 
     describe 'before_save' do
       before(:each) do
+        root_object.save
         file_object[:name] = "\n\t\\\"<a>'*:;b?|/"
         file_object.save
       end
@@ -291,38 +278,56 @@ describe FileObject do
   end
 
   describe 'class methods' do
+    describe 'get_trash_object' do
+      before(:each) do
+        root_object.save
+        trash_object.save
+      end
+
+      it 'return trash object' do
+        expect(FileObject.get_trash_object).to eq(trash_object)
+      end
+    end
+
+    describe 'get_children_by_id_hash' do
+      before(:each) do
+        root_object.save
+        directory_object.save
+        file_object[:parent_directory_id_hash] = directory_object[:id_hash]
+        file_object.save
+      end
+
+      it 'return children' do
+        file_object2 = FactoryGirl.create(:file_object)
+        file_object2[:parent_directory_id_hash] = directory_object[:id_hash]
+        file_object2.save
+
+        file_object3 = FactoryGirl.create(:file_object)
+        file_object3[:parent_directory_id_hash] = root_object[:id_hash]
+        file_object3.save
+
+        expect(FileObject.get_children_by_id_hash(directory_object[:id_hash])).to eq([file_object, file_object2])
+      end
+    end
+
     describe 'get_directory_object_by_id_hash' do
       context 'root object' do
-        let!(:root_object) { FactoryGirl.create(:root_object, id_hash: id_hash) }
-
-        it 'return object' do
-          expect(FileObject.get_directory_object_by_id_hash(id_hash)).to eq(root_object)
+        before(:each) do
+          root_object.save
         end
-      end
-
-      context 'trash object' do
-        let!(:trash_object) { FactoryGirl.create(:trash_object, id_hash: id_hash) }
 
         it 'return object' do
-          expect(FileObject.get_directory_object_by_id_hash(id_hash)).to eq(trash_object)
-        end
-      end
-
-      context 'directory object' do
-        let!(:directory_object) { FactoryGirl.create(:directory_object, id_hash: id_hash) }
-
-        it 'return object' do
-          expect(FileObject.get_directory_object_by_id_hash(id_hash)).to eq(directory_object)
+          expect(FileObject.get_directory_object_by_id_hash(root_object[:id_hash])).to eq(root_object)
         end
       end
 
       context 'file object' do
         before(:each) do
-          FactoryGirl.build(:file_object, id_hash: id_hash)
+          file_object.save
         end
 
         it 'not return object' do
-          expect(FileObject.get_directory_object_by_id_hash(id_hash)).to be_nil
+          expect(FileObject.get_directory_object_by_id_hash(file_object[:id_hash])).to be_nil
         end
       end
     end
@@ -330,171 +335,152 @@ describe FileObject do
     describe 'get_file_or_directory_object_by_id_hash' do
       context 'root object' do
         before(:each) do
-          FactoryGirl.build(:root_object, id_hash: id_hash)
+          root_object.save
         end
 
         it 'not return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hash(id_hash)).to be_nil
-        end
-      end
-
-      context 'trash object' do
-        before(:each) do
-          FactoryGirl.build(:trash_object, id_hash: id_hash)
-        end
-
-        it 'not return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hash(id_hash)).to be_nil
-        end
-      end
-
-      context 'directory object' do
-        let!(:directory_object) { FactoryGirl.create(:directory_object, id_hash: id_hash) }
-
-        it 'return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hash(id_hash)).to eq(directory_object)
+          expect(FileObject.get_file_or_directory_object_by_id_hash(root_object[:id_hash])).to be_nil
         end
       end
 
       context 'file object' do
         before(:each) do
-          file_object[:id_hash] = id_hash
+          root_object.save
           file_object.save
         end
 
         it 'return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hash(id_hash)).to eq(file_object)
+          expect(FileObject.get_file_or_directory_object_by_id_hash(file_object[:id_hash])).to eq(file_object)
         end
       end
     end
 
-    describe 'get_file_or_directory_object_by_id_hashes' do
+    describe 'get_file_object_by_id_hash' do
       context 'root object' do
         before(:each) do
-          FactoryGirl.build(:root_object, id_hash: id_hash)
+          root_object.save
         end
 
         it 'not return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hashes([id_hash])).to be_empty
+          expect(FileObject.get_file_object_by_id_hash(root_object[:id_hash])).to be_nil
         end
       end
 
       context 'trash object' do
         before(:each) do
-          FactoryGirl.build(:trash_object, id_hash: id_hash)
+          root_object.save
+          trash_object.save
         end
 
         it 'not return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hashes([id_hash])).to be_empty
+          expect(FileObject.get_file_object_by_id_hash(trash_object[:id_hash])).to be_nil
         end
       end
 
       context 'directory object' do
-        let!(:directory_object) { FactoryGirl.create(:directory_object, id_hash: id_hash) }
+        before(:each) do
+          root_object.save
+          directory_object.save
+        end
 
-        it 'return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hashes([id_hash])).to eq([directory_object])
+        it 'not return object' do
+          expect(FileObject.get_file_object_by_id_hash(directory_object[:id_hash])).to be_nil
         end
       end
 
       context 'file object' do
         before(:each) do
-          file_object[:id_hash] = id_hash
+          root_object.save
           file_object.save
         end
 
         it 'return object' do
-          expect(FileObject.get_file_or_directory_object_by_id_hashes([id_hash])).to eq([file_object])
+          expect(FileObject.get_file_object_by_id_hash(file_object[:id_hash])).to eq(file_object)
         end
       end
     end
 
-    describe 'get_trash_object' do
+    describe 'create_directory' do
       before(:each) do
-        FactoryGirl.build(:root_object)
-        FactoryGirl.build(:directory_object)
-        FactoryGirl.build(:file_object)
+        root_object.save
       end
 
-      let!(:trash_object) { FactoryGirl.create(:trash_object) }
+      let(:params) do
+        {
+          name: 'name',
+          parent_directory_id_hash: root_object[:id_hash],
+        }
+      end
 
-      it 'return trash object' do
-        expect(FileObject.get_trash_object).to eq(trash_object)
+      it 'inclement directory object' do
+        expect {
+          FileObject.create_directory(params)
+        }.to change { FileObject.where(object_mode: 3).count }.by(1)
+      end
+
+      it 'check params' do
+        directory_object = FileObject.create_directory(params)
+        expect(directory_object[:name]).to eq(params[:name])
+        expect(directory_object[:parent_directory_id_hash]).to eq(root_object[:id_hash])
+        expect(directory_object[:object_mode]).to eq(3)
+        expect(directory_object[:id_hash]).to match(/\A[a-f\d]{40}\z/)
       end
     end
-  end
 
-  describe 'instance methods' do
-    describe 'file_upload' do
+    describe 'upload_file' do
       before(:each) do
+        root_object.save
+
         expect(FileUtils).to receive(:mkdir_p) #.with #TODO
         expect(File).to receive(:open) #.with #TODO
 
         allow(dummy_file).to receive(:read) { 'dummy' }
-        allow(dummy_file).to receive(:original_filename) { 'dummy' }
-        allow(dummy_file).to receive(:size) { 0 }
-
-        file_object[:parent_directory_id] = root_object[:id]
-        file_object.save
-
-        file_object.file_upload(dummy_file)
+        allow(dummy_file).to receive(:original_filename) { original_filename }
+        allow(dummy_file).to receive(:size) { size }
       end
 
       let(:dummy_file) { {} }
-      let(:root_object) { FactoryGirl.create(:root_object) }
+      let(:original_filename) { 'dummy' }
+      let(:size) { 0 }
 
-      it 'save file' do
-        expect(file_object.persisted?).to be_truthy
+      let(:params) do
+        {
+          file: dummy_file,
+          parent_directory_id_hash: root_object[:id_hash],
+        }
       end
-    end
 
-    describe 'directory_make' do
-      let(:root_object) { FactoryGirl.create(:root_object) }
-      let(:new_directory_name) { 'new' }
-
-      it 'make directory object' do
+      it 'inclement file object' do
         expect {
-          root_object.directory_make(new_directory_name)
-        }.to change { FileObject.where(name: new_directory_name).count }.by(1)
+          FileObject.upload_file(params)
+        }.to change { FileObject.where(object_mode: 4).count }.by(1)
+      end
+
+      it 'check params' do
+        file_object = FileObject.upload_file(params)
+        expect(file_object[:name]).to eq(original_filename)
+        expect(file_object[:parent_directory_id_hash]).to eq(root_object[:id_hash])
+        expect(file_object[:object_mode]).to eq(4)
+        expect(file_object[:id_hash]).to match(/\A[a-f\d]{40}\z/)
+        expect(file_object[:file_hash]).to match(/\A[a-f\d]{40}\z/)
+        expect(file_object[:size]).to eq(size)
       end
     end
+  end
 
-    describe 'object_rename' do
-      before(:each) do
-        file_object[:parent_directory_id] = root_object[:id]
-      end
-
-      let(:root_object) { FactoryGirl.create(:root_object) }
-      let(:new_file_name) { 'new' }
-
-      it 'change file object name' do
-        expect(file_object[:name]).not_to eq(new_file_name)
-        file_object.object_rename(new_file_name)
-        expect(file_object[:name]).to eq(new_file_name)
-      end
+  describe 'get_random_sha1' do
+    it 'match regex' do
+      expect(FileObject.get_random_sha1).to match(/\A[a-f\d]{40}\z/)
     end
+  end
 
-    describe 'object_paste' do
-      before(:each) do
-        file_object[:parent_directory_id] = root_object[:id]
-        file_object.object_paste(directory_object[:id_hash])
-      end
-
-      let(:root_object) { FactoryGirl.create(:root_object) }
-      let(:directory_object) { FactoryGirl.create(:directory_object, parent_directory_id: root_object[:id]) }
-
-      it 'change directory of file object' do
-        expect(file_object[:parent_directory_id]).to eq(directory_object[:id])
-      end
-    end
-
+  describe 'instance methods' do
     describe 'object_delete' do
       context 'root object' do
         before(:each) do
+          root_object.save
           root_object.object_delete
         end
-
-        let(:root_object) { FactoryGirl.build(:root_object) }
 
         it 'not delete root object' do
           expect(root_object.destroyed?).to be_falsy
@@ -503,10 +489,10 @@ describe FileObject do
 
       context 'trash object' do
         before(:each) do
+          root_object.save
+          trash_object.save
           trash_object.object_delete
         end
-
-        let(:trash_object) { FactoryGirl.build(:trash_object) }
 
         it 'not delete trash object' do
           expect(trash_object.destroyed?).to be_falsy
@@ -515,29 +501,41 @@ describe FileObject do
 
       context 'directory object' do
         context 'trash ancestor' do
-          let(:trash_object) { FactoryGirl.create(:trash_object) }
-          let(:directory_object) { FactoryGirl.create(:directory_object, parent_directory_id: trash_object[:id]) }
+          before(:each) do
+            root_object.save
+            trash_object.save
+            directory_object[:parent_directory_id_hash] = trash_object[:id_hash]
+            directory_object.save
+            file_object[:parent_directory_id_hash] = directory_object[:id_hash]
+            file_object.save
+            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
+          end
 
-          it 'delete directry object' do
+          it 'delete object' do
             directory_object.object_delete
             expect(directory_object.destroyed?).to be_truthy
           end
         end
 
         context 'root ancestor' do
-          let(:root_object) { FactoryGirl.create(:root_object) }
-          let!(:trash_object) { FactoryGirl.create(:trash_object) }
-          let(:directory_object) { FactoryGirl.create(:directory_object, parent_directory_id: root_object[:id]) }
+          before(:each) do
+            root_object.save
+            trash_object.save
+            directory_object.save
+            file_object[:parent_directory_id_hash] = directory_object[:id_hash]
+            file_object.save
+          end
 
-          it 'not delete directry object' do
+          it 'not delete object' do
             directory_object.object_delete
             expect(directory_object.destroyed?).to be_falsy
+            expect(file_object.destroyed?).to be_falsy
           end
 
           it 'move trash object' do
-            expect(directory_object[:parent_directory_id]).to eq(root_object[:id])
+            expect(directory_object[:parent_directory_id_hash]).to eq(root_object[:id_hash])
             directory_object.object_delete
-            expect(directory_object[:parent_directory_id]).to eq(trash_object[:id])
+            expect(directory_object[:parent_directory_id_hash]).to eq(trash_object[:id_hash])
           end
         end
       end
@@ -545,13 +543,12 @@ describe FileObject do
       context 'file object' do
         context 'trash ancestor' do
           before(:each) do
-            file_object[:parent_directory_id] = trash_object[:id]
+            root_object.save
+            trash_object.save
+            file_object[:parent_directory_id_hash] = trash_object[:id_hash]
             file_object.save
-
             expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
           end
-
-          let(:trash_object) { FactoryGirl.create(:trash_object) }
 
           it 'delete file object' do
             file_object.object_delete
@@ -561,11 +558,10 @@ describe FileObject do
 
         context 'root ancestor' do
           before(:each) do
-            file_object[:parent_directory_id] = root_object[:id]
+            root_object.save
+            trash_object.save
+            file_object.save
           end
-
-          let(:root_object) { FactoryGirl.create(:root_object) }
-          let!(:trash_object) { FactoryGirl.create(:trash_object) }
 
           it 'not delete file object' do
             file_object.object_delete
@@ -573,19 +569,15 @@ describe FileObject do
           end
 
           it 'move trash object' do
-            expect(file_object[:parent_directory_id]).to eq(root_object[:id])
+            expect(file_object[:parent_directory_id_hash]).to eq(root_object[:id_hash])
             file_object.object_delete
-            expect(file_object[:parent_directory_id]).to eq(trash_object[:id])
+            expect(file_object[:parent_directory_id_hash]).to eq(trash_object[:id_hash])
           end
         end
       end
     end
 
     describe 'is_root?' do
-      let(:root_object) { FactoryGirl.build(:root_object) }
-      let(:trash_object) { FactoryGirl.build(:trash_object) }
-      let(:directory_object) { FactoryGirl.build(:directory_object) }
-
       it 'root_object:true else false' do
         expect(root_object.is_root?).to be_truthy
         expect(trash_object.is_root?).to be_falsy
@@ -595,10 +587,6 @@ describe FileObject do
     end
 
     describe 'is_trash?' do
-      let(:root_object) { FactoryGirl.build(:root_object) }
-      let(:trash_object) { FactoryGirl.build(:trash_object) }
-      let(:directory_object) { FactoryGirl.build(:directory_object) }
-
       it 'trash_object:true else false' do
         expect(root_object.is_trash?).to be_falsy
         expect(trash_object.is_trash?).to be_truthy
@@ -608,10 +596,6 @@ describe FileObject do
     end
 
     describe 'is_directory?' do
-      let(:root_object) { FactoryGirl.build(:root_object) }
-      let(:trash_object) { FactoryGirl.build(:trash_object) }
-      let(:directory_object) { FactoryGirl.build(:directory_object) }
-
       it 'directory_object:true else false' do
         expect(root_object.is_directory?).to be_falsy
         expect(trash_object.is_directory?).to be_falsy
@@ -621,10 +605,6 @@ describe FileObject do
     end
 
     describe 'is_file?' do
-      let(:root_object) { FactoryGirl.build(:root_object) }
-      let(:trash_object) { FactoryGirl.build(:trash_object) }
-      let(:directory_object) { FactoryGirl.build(:directory_object) }
-
       it 'file_object:true else false' do
         expect(root_object.is_file?).to be_falsy
         expect(trash_object.is_file?).to be_falsy
@@ -634,14 +614,18 @@ describe FileObject do
     end
 
     describe 'updated_at_h' do
-      let(:trash_object) { FactoryGirl.create(:trash_object) }
+      before(:each) do
+        root_object.save
+      end
 
       it 'return easy to read date' do
-        expect(trash_object.updated_at_h).to eq(trash_object.updated_at.strftime("%Y/%m/%d %T"))
+        expect(root_object.updated_at_h).to eq(root_object.updated_at.strftime("%Y/%m/%d %T"))
       end
     end
 
     describe 'file_fullpath' do
+      let(:data_path) { Rails.application.secrets.data_path }
+
       it 'return fullpath' do
         expect(file_object.file_fullpath).to eq(File.join(data_path, file_object[:file_hash][0, 2], file_object[:file_hash]))
       end
@@ -650,11 +634,9 @@ describe FileObject do
     describe 'get_parent_directories_list' do
       context 'root object' do
         before(:each) do
-          file_object[:parent_directory_id] = root_object[:id]
+          root_object.save
           file_object.save
         end
-
-        let(:root_object) { FactoryGirl.create(:root_object) }
 
         let(:result) do
           [
@@ -670,6 +652,8 @@ describe FileObject do
     end
 
     describe 'file_save_path' do
+      let(:data_path) { Rails.application.secrets.data_path }
+
       it 'return savepath' do
         expect(file_object.file_save_path).to eq(File.join(data_path, file_object[:file_hash][0, 2]))
       end
@@ -678,10 +662,8 @@ describe FileObject do
     describe 'is_trash_ancestor?' do
       context 'root ancestor?' do
         before(:each) do
-          file_object[:parent_directory_id] = root_object[:id]
+          root_object.save
         end
-
-        let(:root_object) { FactoryGirl.create(:root_object) }
 
         it "return false" do
           expect(file_object.is_trash_ancestor?).to be_falsy
@@ -690,14 +672,34 @@ describe FileObject do
 
       context 'trash ancestor?' do
         before(:each) do
-          file_object[:parent_directory_id] = trash_object[:id]
+          root_object.save
+          trash_object.save
+          file_object[:parent_directory_id_hash] = trash_object[:id_hash]
         end
-
-        let(:trash_object) { FactoryGirl.create(:trash_object) }
 
         it "return true" do
           expect(file_object.is_trash_ancestor?).to be_truthy
         end
+      end
+    end
+
+    describe "is_mine_ancestor?" do
+      before(:each) do
+        root_object.save
+        directory_object.save
+      end
+
+      let(:directory_object2) do
+        FactoryGirl.create(:directory_object, {id_hash: 'directory_object2', parent_directory_id_hash: directory_object[:id_hash]})
+      end
+
+      it 'ok' do
+        expect(directory_object2.is_mine_ancestor?).to be_falsy
+      end
+
+      it 'ng' do
+        directory_object[:parent_directory_id_hash] = directory_object2[:id_hash]
+        expect(directory_object.is_mine_ancestor?).to be_truthy
       end
     end
   end

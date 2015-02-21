@@ -4,87 +4,47 @@ class FileObjectsController < ApplicationController
   end
 
   def index
+    file_objects = FileObject.get_children_by_id_hash(params[:id_hash]).select(:name, :parent_directory_id_hash, :object_mode, :id_hash, :size, :created_at)
+    render json: file_objects
+  end
+
+  def create
+    if params[:file]
+      file_object = FileObject.upload_file(params)
+    else
+      file_object = FileObject.create_directory(params)
+    end
+
+    # #idを返さないようにする
+    file_object[:id] = 0
+
+    render json: file_object, status: file_object.errors.messages.empty? ? 200 : 500
+  end
+
+  def update
+    file_object = FileObject.get_file_or_directory_object_by_id_hash(params[:id])
+
+    if !file_object.is_root? && !file_object.is_trash?
+      file_object[:parent_directory_id_hash] = params[:parent_directory_id_hash]
+      file_object[:name] = params[:name]
+      file_object.save
+    end
+
+    render json: file_object, status: file_object.errors.messages.empty? ? 200 : 500
+  end
+
+  def destroy
+    delete_object = FileObject.get_file_or_directory_object_by_id_hash(params[:id_hash]).object_delete
+    render json: delete_object, status: delete_object.errors.messages.empty? ? 200 : 500
   end
 
   def parent_directories_list
-    @parent_directories_list = FileObject.get_directory_object_by_id_hash(params[:file_object_id_hash]).get_parent_directories_list
-
-    render :layout => false
+    parent_directories_list = FileObject.get_directory_object_by_id_hash(params[:id_hash]).get_parent_directories_list
+    render json: parent_directories_list
   end
 
-  def current_files_list
-    directory_object = FileObject.get_directory_object_by_id_hash(params[:file_object_id_hash])
-    @current_files_list = FileObject.where(parent_directory_id: directory_object[:id], object_mode: [2, 3, 4])
-
-    render :layout => false
-  end
-
-  def proc
-    case params[:proc_mode]
-    when 'file_upload'
-      proc_file_upload
-    when 'directory_make'
-      proc_directory_make
-    when 'object_rename'
-      proc_object_rename
-    when 'object_paste'
-      proc_object_paste
-    when 'object_delete'
-      proc_object_delete
-    end
-
-    render text: ''
-  end
-
-  def download
-    file_object = FileObject.find_by(id_hash: params[:id_hash])
+  def file_download
+    file_object = FileObject.get_file_object_by_id_hash(params[:id_hash])
     send_file file_object.file_fullpath, filename: file_object.name
-  end
-
-  private
-
-  def proc_file_upload
-    current_directory_id_hash = params[:current_directory_id_hash]
-    current_directory_object  = FileObject.get_directory_object_by_id_hash(current_directory_id_hash)
-    upload_files              = params[:upload_files]
-
-    upload_files.each do |upload_file|
-      current_directory_object.file_upload(upload_file)
-    end
-  end
-
-  def proc_directory_make
-    current_directory_id_hash = params[:current_directory_id_hash]
-    current_directory_object  = FileObject.get_directory_object_by_id_hash(current_directory_id_hash)
-    new_directory_name        = params[:new_directory_name]
-
-    current_directory_object.directory_make(new_directory_name)
-  end
-
-  def proc_object_rename
-    rename_object_id_hash = params[:rename_object_id_hash]
-    rename_object_name    = params[:rename_object_name]
-    file_object           = FileObject.get_file_or_directory_object_by_id_hash(rename_object_id_hash)
-
-    file_object.object_rename(rename_object_name)
-  end
-
-  def proc_object_paste
-    current_directory_id_hash = params[:current_directory_id_hash]
-    paste_object_id_hashes    = params[:checked_object_id_hashes].split(',')
-    paste_objects             = FileObject.get_file_or_directory_object_by_id_hashes(paste_object_id_hashes)
-
-    paste_objects.each do |file_object|
-      file_object.object_paste(current_directory_id_hash)
-    end
-  end
-
-  def proc_object_delete
-    delete_object_id_hashes = params[:checked_object_id_hashes].split(',')
-    delete_objects          = FileObject.get_file_or_directory_object_by_id_hashes(delete_object_id_hashes)
-
-    delete_objects.each do |file_object|
-      file_object.object_delete
-    end
   end
 end

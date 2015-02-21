@@ -13,26 +13,25 @@
 
 ActiveRecord::Schema.define(version: 20140614042712) do
 
-  create_table "file_objects", force: true do |t|
-    t.string   "name"
-    t.integer  "parent_directory_id"
-    t.integer  "object_mode"
-    t.string   "id_hash",             limit: 40
-    t.string   "file_hash",           limit: 40
-    t.integer  "size"
+  create_table "file_objects", force: :cascade do |t|
+    t.string   "name",                     limit: 512
+    t.string   "parent_directory_id_hash", limit: 40
+    t.integer  "object_mode",              limit: 4
+    t.string   "id_hash",                  limit: 40
+    t.string   "file_hash",                limit: 40
+    t.integer  "size",                     limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   add_index "file_objects", ["id_hash"], name: "index_file_objects_on_id_hash", using: :btree
-  add_index "file_objects", ["object_mode"], name: "index_file_objects_on_object_mode", using: :btree
-  add_index "file_objects", ["parent_directory_id"], name: "index_file_objects_on_parent_directory_id", using: :btree
+  add_index "file_objects", ["parent_directory_id_hash"], name: "index_file_objects_on_parent_directory_id_hash", using: :btree
 
-  create_table "users", force: true do |t|
+  create_table "users", force: :cascade do |t|
     t.string   "login_id",        limit: 64
     t.string   "password_digest", limit: 60
     t.string   "remember_token",  limit: 64
-    t.boolean  "admin",                      default: false
+    t.boolean  "admin",           limit: 1,  default: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end

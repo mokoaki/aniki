@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>アニキ牧場</title>
+  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+  <div id="parent_directories_list" class="waku"></div>
+
+  <div id="menu" class="waku">
+    <%= button_tag('ファイルアップロード', {type: 'button', id: 'file_upload_field'}) %>
+    <%= text_field_tag 'newDirectoryName', '', {placeholder: '新規ディレクトリ名'} %>
+    <%= button_tag('ディレクトリ作成', {type: 'button', id: 'createDirectoryButton'}) %>
+    <%= button_tag('カット', {type: 'button', id: 'cutObjectButton', disabled: true}) %>
+    <%= button_tag('ペースト', {type: 'button', id: 'pasteObjectButton', disabled: true}) %>
+    <%= button_tag('削除', {type: 'button', id: 'deleteObjectButton', disabled: true}) %>
+    <%= button_tag('ユーザ情報変更', {type: 'button', id: 'userEditButton'}) %>
+
+    <% if current_user.admin? %>
+      <%= button_tag 'ユーザ新規作成', type: 'button', id: 'userCreateButton' %>
+    <% end %>
+
+    <%= image_tag('spinner.gif', {id: 'spinner'}) %>
+  </div>
+
+  <div id="current_files_list" class="waku"></div>
+
+  <script id="parentDirectoriesTemplate" type="text/x-handlebars-template">
+    <span class="directory" style="margin-left:{{ margin }}px;">{{ name_henkan name }}</span>
+  </script>
+
+  <script id="fileObjectTemplate" type="text/x-handlebars-template">
+    <div class="cell">
+      <input type="checkbox" class="checkbox {{#isTrash object_mode}}misenai{{/isTrash}}" {{#isTrash object_mode}}disabled{{/isTrash}}>
+
+      <span class="name_form">
+        {{#isTrash     object_mode}}<img src="<%= asset_path('icon_trash_alt.png') %>" />{{/isTrash}}
+        {{#isDirectory object_mode}}<img src="<%= asset_path('icon_folder_alt.png') %>" />{{/isDirectory}}
+        {{#isFile      object_mode}}<img src="<%= asset_path('icon_document_alt.png') %>" />{{/isFile}}
+        <span class="{{ class_object_type object_mode }}">{{ name }}</span>
+        <span class="renameButton {{#isTrash object_mode}}display_none{{/isTrash}}">[R]</span>
+      </span>
+
+      <span class="rename_form">
+        <input type="text" class="renameField">
+      </span>
+    </div>
+
+    <div class="cell right">
+      {{size}}{{#if size}}Byte{{/if}} {{hiduke created_at}}
+    </div>
+  </script>
+
+  <%= javascript_include_tag 'application' %>
+</body>
+</html>

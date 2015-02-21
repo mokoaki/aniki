@@ -10,13 +10,18 @@
     edit config/database.yml  
     edit config/secrets.yml
 
-    bundle exec db:create  
-    bundle exec db:migrate  
+    bundle exec rake db:create  
+    bundle exec rake db:migrate  
     bundle exec rake initialize  
 
     bundle exec rspec  
 
-    bundle exec rails s  
+    bundle exec rails s -b 0.0.0.0  
+
+    http://192.168.56.11:3000  
+
+    user adminadmin  
+    password adminadmin
 
     (∩´∀｀)∩
 

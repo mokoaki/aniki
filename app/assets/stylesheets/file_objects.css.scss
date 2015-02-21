@@ -7,24 +7,12 @@ div.waku {
   padding:10px;
 }
 
-div#proc_div {
+div#proc {
   display: none;
 }
 
-div#new_directory_form {
+input#DirectoryCreateForm {
   display: none;
-}
-
-input#new_directory_name {
-  width: 100%;
-  font-size:22px;
-}
-
-div#rename_object_form {
-  display: none;
-}
-
-input#rename_object_name {
   width: 100%;
   font-size:22px;
 }
@@ -33,7 +21,7 @@ img#spinner {
   display: none;
 }
 
-div.table {
+div.fileObject {
   display: table;
   width: 100%;
   height: 30px;
@@ -41,7 +29,7 @@ div.table {
   border-radius: 5px;
 }
 
-div.table:nth-child(even) {
+div.fileObject:nth-child(even) {
   background-color: #fcfcfc;
 }
 
@@ -53,28 +41,44 @@ div.right {
   text-align:right;
 }
 
-div.opacity {
+span.directory:hover, span.file:hover, span.renameButton:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+span.name_form {
+  margin-left: 5px;
+}
+
+span.rename_form {
+  display: none;
+}
+
+input.checkbox {
+  transform: scale(2);
+}
+
+input.renameField {
+  font-size: 22px;
+  width: 800px;
+}
+
+.display_none {
+  display: none;
+}
+
+div.cuted {
   opacity:0.2;
+}
+
+input.misenai {
+  opacity:0;
 }
 
 img {
   vertical-align: middle;
 }
 
-input[type=checkbox] {
-  transform: scale(2);
-}
-
-span.object_file:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-span.object_directory:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.field_with_errors input {
-  background-color: #f2dede;
-}
+// .field_with_errors input {
+//   background-color: #f2dede;
+// }

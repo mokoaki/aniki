@@ -3,7 +3,8 @@ class User < ActiveRecord::Base
                        length: { in: (4..64) },
                        uniqueness: { case_sensitive: false }
 
-  validates :password, length: { minimum: 6 }
+  validates :password, presence: true,
+                       length: { minimum: 6 }
 
   has_secure_password
 

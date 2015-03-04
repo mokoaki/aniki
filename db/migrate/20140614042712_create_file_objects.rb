@@ -17,7 +17,7 @@ class CreateFileObjects < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_index :file_objects, :id_hash
+    add_index :file_objects, :id_hash, unique: true
     add_index :file_objects, :parent_directory_id_hash
   end
 end

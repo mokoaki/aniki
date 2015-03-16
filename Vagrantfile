@@ -51,13 +51,23 @@ Vagrant.configure(2) do |config|
   # Example for VirtualBox:
 
   config.vm.provider "virtualbox" do |vb|
+    host = RbConfig::CONFIG['host_os']
+
+    if host =~ /darwin/
+      cpus = `sysctl -n hw.ncpu`.to_i
+      mem = `sysctl -n hw.memsize`.to_i / 1024 / 1024 / 4
+      # elsif host =~ /linux/
+      #   cpus = `nproc`.to_i
+      #   mem = `grep 'MemTotal' /proc/meminfo | sed -e 's/MemTotal://' -e 's/ kB//'`.to_i / 1024 / 4
+      # else
+      #   cpus = 2
+      #   mem = 1024
+    end
+
     vb.name = 'aniki-vm'
-
-    # Display the VirtualBox GUI when booting the machine
     vb.gui = false
-
-    # Customize the amount of memory on the VM:
-    vb.memory = "1024"
+    vb.memory = mem
+    vb.cpus   = cpus
   end
 
   # View the documentation for the provider you are using for more

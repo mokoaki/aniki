@@ -14,7 +14,7 @@ class CreateFileObjects < ActiveRecord::Migration
       t.string  :file_hash,                limit: 40
       t.integer :size
 
-      t.timestamps
+      t.timestamps null: false
     end
 
     add_index :file_objects, :id_hash, unique: true

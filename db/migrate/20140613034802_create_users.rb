@@ -6,7 +6,7 @@ class CreateUsers < ActiveRecord::Migration
       t.string  :remember_token,  limit: 64
       t.boolean :admin, default: false
 
-      t.timestamps
+      t.timestamps null: false
     end
 
     add_index :users, :login_id, unique: true

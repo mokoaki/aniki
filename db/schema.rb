@@ -20,11 +20,11 @@ ActiveRecord::Schema.define(version: 20140614042712) do
     t.string   "id_hash",                  limit: 40
     t.string   "file_hash",                limit: 40
     t.integer  "size",                     limit: 4
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
   end
 
-  add_index "file_objects", ["id_hash"], name: "index_file_objects_on_id_hash", using: :btree
+  add_index "file_objects", ["id_hash"], name: "index_file_objects_on_id_hash", unique: true, using: :btree
   add_index "file_objects", ["parent_directory_id_hash"], name: "index_file_objects_on_parent_directory_id_hash", using: :btree
 
   create_table "users", force: :cascade do |t|
@@ -32,8 +32,8 @@ ActiveRecord::Schema.define(version: 20140614042712) do
     t.string   "password_digest", limit: 60
     t.string   "remember_token",  limit: 64
     t.boolean  "admin",           limit: 1,  default: false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
   end
 
   add_index "users", ["login_id"], name: "index_users_on_login_id", unique: true, using: :btree

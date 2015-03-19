@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.2.0'
+ruby '2.2.1'
 
 gem 'rails', '4.2.0'
 gem 'mysql2'
@@ -37,11 +37,4 @@ group :test do
   gem 'capybara'
   gem 'poltergeist'
   gem 'database_cleaner'
-  #gem 'selenium-webdriver', '2.35.1'
-  #gem 'capybara-webkit'
-
-  ###capybaraはSeleniumのdriverがデフォで入る？
-  ###yum install xvfb
-  ###gem 'headless'
-  ###http://d.hatena.ne.jp/sandmark/20120324/1332590065
 end

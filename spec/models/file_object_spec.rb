@@ -433,15 +433,14 @@ describe FileObject do
       before(:each) do
         root_object.save
 
-        expect(FileUtils).to receive(:mkdir_p) #.with #TODO
-        expect(File).to receive(:open) #.with #TODO
-
+        allow(FileUtils).to receive(:mkdir_p)
+        allow(File).to receive(:open)
         allow(dummy_file).to receive(:read) { 'dummy' }
         allow(dummy_file).to receive(:original_filename) { original_filename }
         allow(dummy_file).to receive(:size) { size }
       end
 
-      let(:dummy_file) { {} }
+      let(:dummy_file) { double(:dummy_file) }
       let(:original_filename) { 'dummy' }
       let(:size) { 0 }
 

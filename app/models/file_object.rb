@@ -27,6 +27,11 @@ class FileObject < ActiveRecord::Base
   belongs_to :parent_directory, class_name: :FileObject, primary_key: :id_hash, foreign_key: :parent_directory_id_hash
   has_many   :children,         class_name: :FileObject, primary_key: :id_hash, foreign_key: :parent_directory_id_hash, dependent: :destroy
 
+
+  # enum object_mode: {root_object: 1, trash_object: 2, directory_object: 3, file_object: 4}
+  # enum object_mode: [:root_object, :trash_object, :directory_object, :file_object]
+  # enum object_mode: ['root_object', 'trash_object', 'directory_object', 'file_object']
+
   # default_scope -> { order(:object_mode, :name) }
 
   before_destroy do

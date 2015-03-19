@@ -240,11 +240,11 @@ describe FileObject do
             root_object.save
             file_object.save
             file_object2 = FactoryGirl.create(:file_object)
-            expect(FileUtils).not_to receive(:rm).with(file_object.file_fullpath)
-            file_object.destroy
           end
 
           it 'sucess destroy' do
+            expect(FileUtils).not_to receive(:rm).with(file_object.file_fullpath)
+            file_object.destroy
             expect(file_object.destroyed?).to be_truthy
           end
         end
@@ -253,11 +253,11 @@ describe FileObject do
           before(:each) do
             root_object.save
             file_object.save
-            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
-            file_object.destroy
           end
 
           it 'sucess destroy' do
+            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
+            file_object.destroy
             expect(file_object.destroyed?).to be_truthy
           end
         end
@@ -508,10 +508,10 @@ describe FileObject do
             directory_object.save
             file_object[:parent_directory_id_hash] = directory_object[:id_hash]
             file_object.save
-            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
           end
 
           it 'delete object' do
+            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
             directory_object.object_delete
             expect(directory_object.destroyed?).to be_truthy
           end
@@ -547,10 +547,10 @@ describe FileObject do
             trash_object.save
             file_object[:parent_directory_id_hash] = trash_object[:id_hash]
             file_object.save
-            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
           end
 
           it 'delete file object' do
+            expect(FileUtils).to receive(:rm).with(file_object.file_fullpath)
             file_object.object_delete
             expect(file_object.destroyed?).to be_truthy
           end

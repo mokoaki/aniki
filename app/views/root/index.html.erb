@@ -27,7 +27,7 @@
   <div id="current_files_list" class="waku"></div>
 
   <script id="parentDirectoriesTemplate" type="text/x-handlebars-template">
-    <span class="directory" style="margin-left:{{ margin }}px;">{{ name_henkan name }}</span>
+    <a href="/{{ id }}" class="directory_item" style="margin-left:{{ margin }}px;">{{ name_henkan name }}</a>
   </script>
 
   <script id="fileObjectTemplate" type="text/x-handlebars-template">
@@ -35,11 +35,24 @@
       <input type="checkbox" class="checkbox {{#isTrash object_mode}}misenai{{/isTrash}}" {{#isTrash object_mode}}disabled{{/isTrash}}>
 
       <span class="name_form">
-        {{#isTrash     object_mode}}<img src="<%= asset_path('icon_trash_alt.png') %>" />{{/isTrash}}
-        {{#isDirectory object_mode}}<img src="<%= asset_path('icon_folder_alt.png') %>" />{{/isDirectory}}
-        {{#isFile      object_mode}}<img src="<%= asset_path('icon_document_alt.png') %>" />{{/isFile}}
-        <span class="{{ class_object_type object_mode }}">{{ name }}</span>
-        <span class="renameButton {{#isTrash object_mode}}display_none{{/isTrash}}">[R]</span>
+        {{#isTrash object_mode}}
+          <img src="<%= asset_path('icon_trash_alt.png') %>" />
+          <a href="/{{ id }}" class="directory_item">{{ name }}</a>
+        {{/isTrash}}
+
+        {{#isDirectory object_mode}}
+          <img src="<%= asset_path('icon_folder_alt.png') %>" />
+          <a href="/{{ id }}" class="directory_item">{{ name }}</a>
+        {{/isDirectory}}
+
+        {{#isFile object_mode}}
+          <img src="<%= asset_path('icon_document_alt.png') %>" />
+          <a href="/f/{{ id }}" class="file_item">{{ name }}</a>
+        {{/isFile}}
+
+        {{#isNotTrash object_mode}}
+          <span class="renameButton">[R]</span>
+        {{/isNotTrash}}
       </span>
 
       <span class="rename_form">

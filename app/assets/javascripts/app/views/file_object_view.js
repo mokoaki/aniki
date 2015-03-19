@@ -12,8 +12,7 @@ var FileObjectView = Backbone.View.extend({
     },
 
     events: {
-        "click span.directory"      : "clickDirectory",
-        "click span.file"           : "clickFile",
+        "click a.directory_item"    : "clickDirectory",
         "click input.checkbox"      : "clickCheckbox",
         "click span.renameButton"   : "clickRenameButton",
         "click input.renameField"   : "clickRenameField",
@@ -22,14 +21,9 @@ var FileObjectView = Backbone.View.extend({
     },
 
     clickDirectory: function(event) {
+        event.preventDefault();
         event.stopPropagation();
         Backbone.history.navigate(this.model.get("id"), true);
-    },
-
-    clickFile: function(event) {
-        event.stopPropagation();
-
-        location.href = "/f/" + this.model.get("id");
     },
 
     clickCheckbox: function(event) {

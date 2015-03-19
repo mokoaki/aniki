@@ -4,10 +4,12 @@ var ParentDirectoryView = Backbone.View.extend({
     template: Handlebars.compile($("#parentDirectoriesTemplate").html()),
 
     events: {
-        "click span.directory" : "clickDirectory",
+        "click a.directory_item" : "clickDirectory",
     },
 
     clickDirectory: function() {
+        event.preventDefault();
+        event.stopPropagation();
         Backbone.history.navigate(this.model.get("id"), true);
     },
 

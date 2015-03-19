@@ -239,7 +239,7 @@ describe FileObject do
           before(:each) do
             root_object.save
             file_object.save
-            file_object2 = FactoryGirl.create(:file_object)
+            file_object2 = FactoryGirl.create(:file_object, { id_hash: 'test' })
           end
 
           it 'sucess destroy' do
@@ -298,11 +298,13 @@ describe FileObject do
       end
 
       it 'return children' do
-        file_object2 = FactoryGirl.create(:file_object)
+        file_object2 = FactoryGirl.build(:file_object)
+        file_object2[:id_hash]                  = 'test1'
         file_object2[:parent_directory_id_hash] = directory_object[:id_hash]
         file_object2.save
 
-        file_object3 = FactoryGirl.create(:file_object)
+        file_object3 = FactoryGirl.build(:file_object)
+        file_object3[:id_hash]                  = 'test2'
         file_object3[:parent_directory_id_hash] = root_object[:id_hash]
         file_object3.save
 

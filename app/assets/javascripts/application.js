@@ -53,11 +53,12 @@ var myDropzone = new Dropzone("button#file_upload_field", {
     },
     success: function(a, result) {
         var fileObject = new FileObject({
-            id:          result.id_hash,
-            name:        result.name,
-            object_mode: result.object_mode,
-            size:        result.size,
-            created_at:  result.created_at
+            id:                       result.id_hash,
+            name:                     result.name,
+            parent_directory_id_hash: result.parent_directory_id_hash,
+            object_mode:              result.object_mode,
+            size:                     result.size,
+            created_at:               result.created_at,
         });
 
         fileObjects.add(fileObject);
